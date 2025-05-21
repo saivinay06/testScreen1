@@ -11,6 +11,9 @@ const stepperArr = Array.from({ length: 2 });
 
 function GamePackage() {
   const [packageRows, setPackageRows] = useState(dummyPackages);
+  const [gameTypePrizepool, setGameTypePrizepool] = useState([]);
+  const [accessNextPage, setAccessNextPage] = useState(false);
+
   const [currActiveTab, setCurrActiveTab] = useState(1);
 
   const [userInteraction, setUserInteraction] = useState({
@@ -25,7 +28,9 @@ function GamePackage() {
   });
   const [amountRemaining, setAmountRemaining] = useState();
   const [totalAmount, setTotalAmount] = useState();
-  const [prizeData, setPrizeData] = useState([{ min: 1, max: "", amount: "" }]);
+  const [prizeData, setPrizeData] = useState([
+    { min: "1", max: "", amount: "" },
+  ]);
 
   const dialogRef = useRef(null);
 
@@ -33,15 +38,26 @@ function GamePackage() {
     const fee = parseFloat(userInteraction.entryFee) || 0;
     const players = parseInt(userInteraction.playersCount) || 0;
     const total = fee * players;
+    const { currGame, mode, tier, maxWaitTime, minWaitTime } = userInteraction;
+
+    if (currGame && mode && tier && maxWaitTime && minWaitTime) {
+      setAccessNextPage(true);
+    }
 
     const usedAmount = prizeData.reduce(
-      (sum, row) => sum + (parseFloat(row.amount) || 0),
+      (sum, row) =>
+        sum +
+        calculateMinMax(
+          parseFloat(row.min),
+          parseFloat(row.max),
+          parseFloat(row.amount)
+        ),
       0
     );
 
     setTotalAmount(total);
     setAmountRemaining(total - usedAmount);
-  }, [userInteraction.entryFee, userInteraction.playersCount, prizeData]);
+  }, [prizeData, userInteraction]);
 
   const handleAdd = () => {
     dialogRef.current?.showModal();
@@ -53,46 +69,88 @@ function GamePackage() {
 
   const handleGameChange = (e) => {
     const findGameObj = gameConfig.find((each) => each.name === e.target.value);
+
+    const gamePrizepool = packageRows.filter((each) =>
+      findGameObj.playerCount.includes(each.players)
+    );
+
+    setGameTypePrizepool(gamePrizepool);
+
     setUserInteraction((prev) => ({ ...prev, currGame: findGameObj }));
   };
 
   const handleNext = () => {
+    const { currGame, mode, tier, maxWaitTime, minWaitTime } = userInteraction;
+
+    if (!currGame || !mode || !tier || !maxWaitTime || !minWaitTime) {
+      return;
+    }
+
     if (currActiveTab <= stepperArr.length) {
+      // setAccessNextPage(true);
       setCurrActiveTab(currActiveTab + 1);
     }
   };
 
   const handleAddRow = () => {
-    if (amountRemaining > 0) {
+    if (amountRemaining !== 0) {
       setPrizeData((prev) => [...prev, { min: "", max: "", amount: "" }]);
     }
   };
 
   const handleRowChange = (index, field, value) => {
     const updated = [...prizeData];
-    updated[index][field] = value;
-    console.log(index, field, value);
+    updated[index][field] = parseInt(value);
+
+    const isGreater = parseInt(value) > parseInt(userInteraction.playersCount);
+
+    if (!(field === "amount") && isGreater) {
+      setUserInteraction((prev) => ({
+        ...prev,
+        errorText: `Prizepool positions cannot exceed number of players in game`,
+      }));
+      return;
+    }
 
     if (
       field === "min" &&
       index > 0 &&
       Number(value) <= Number(prizeData[index - 1].max)
     ) {
-      setErrorText("Min value must be greater than previous max");
+      setUserInteraction((prev) => ({
+        ...prev,
+        errorText: "Min value must be greater than previous max",
+      }));
       return;
     }
 
     setUserInteraction((prev) => ({ ...prev, errorText: "" }));
     setPrizeData(updated);
 
-    calculateAmount();
+    if (field === "amount") {
+      calculateAmount();
+    }
+  };
+
+  const calculateMinMax = (min, max, amount) => {
+    if (isNaN(min) || isNaN(max) || isNaN(amount) || max < min) {
+      return 0;
+    }
+    const positions = max - min + 1;
+    return amount * positions;
   };
 
   const calculateAmount = () => {
     const updated = [...prizeData];
 
     const usedAmount = updated.reduce(
-      (sum, row) => sum + (parseFloat(row.amount) || 0),
+      (sum, row) =>
+        sum +
+        calculateMinMax(
+          parseFloat(row.min),
+          parseFloat(row.max),
+          parseFloat(row.amount)
+        ),
       0
     );
 
@@ -119,19 +177,30 @@ function GamePackage() {
   const handleCreateRow = () => {
     setCurrActiveTab(1);
     dialogRef.current.close();
+
+    const {
+      currGame,
+      mode,
+      tier,
+      entryFee,
+      playersCount,
+      minWaitTime,
+      maxWaitTime,
+    } = userInteraction;
+
     setPackageRows((prev) => {
       return [
         ...prev,
         {
           id: prev.length + 1,
-          gameType: userInteraction.currGame.name,
-          gameMode: userInteraction.mode,
-          tier: userInteraction.tier,
-          entryFee: entry,
+          gameType: currGame.name,
+          gameMode: mode,
+          tier,
+          entryFee,
           prizepool: prizeData,
           players: playersCount,
-          minQue: userInteraction.minWaitTime,
-          maxQue: userInteraction.maxWaitTime,
+          minQue: minWaitTime,
+          maxQue: maxWaitTime,
         },
       ];
     });
@@ -162,6 +231,7 @@ function GamePackage() {
             amountRemaining={amountRemaining}
             setPrizeData={setPrizeData}
             packageRows={packageRows}
+            gameTypePrizepool={gameTypePrizepool}
             calculateAmount={calculateAmount}
           />
         );
@@ -184,7 +254,7 @@ function GamePackage() {
       </div>
       <h1 className="text-2xl mt-5 font-semibold">Current Packages</h1>
       <div className="border border-gray-300 rounded-lg overflow-hidden shadow-md my-2">
-        <PackageTable data={packageRows} />
+        <PackageTable data={packageRows} setData={setPackageRows} />
       </div>
       <button
         className="border rounded-xl py-2 px-4 bg-black text-white"
@@ -233,7 +303,9 @@ function GamePackage() {
               </div>
             ) : (
               <button
-                className="bg-black px-6 py-2 rounded-xl text-white w-24"
+                className={`${
+                  accessNextPage ? "bg-black" : "bg-slate-200"
+                } px-6 py-2 rounded-xl text-white w-24`}
                 onClick={handleNext}
               >
                 Next

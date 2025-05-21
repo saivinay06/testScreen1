@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { dummyPrizepools } from "../data";
-import { Search } from "lucide-react";
 
 function StepperPage2({
   interaction,
@@ -13,16 +12,26 @@ function StepperPage2({
   totalAmount,
   amountRemaining,
   packageRows,
+  gameTypePrizepool,
 }) {
   const [selectedPrizepool, setSelectedPrizepool] = useState(null);
 
   const handlePrizepool = (e) => {
-    const index = e.target.value;
-    const findPackage = packageRows.find((each) => each.prizepool.id === index);
+    const prizepoolId = e.target.value;
+    console.log(prizepoolId);
+    console.log(packageRows);
+
+    const findPackage = packageRows.find(
+      (each) => each.prizepool === prizepoolId
+    );
+
+    console.log(findPackage);
 
     const { entryFee, players, prizepool } = findPackage;
 
-    setPrizeData(prizepool.prizeData);
+    const prize = dummyPrizepools.find((each) => each.id === prizepoolId);
+
+    setPrizeData(prize.prizeData);
     setSelectedPrizepool(findPackage);
 
     setInteraction((prev) => ({
@@ -58,8 +67,8 @@ function StepperPage2({
           <option value="" selected>
             Existing prizepools
           </option>
-          {dummyPrizepools.map((each, i) => (
-            <option key={each.id} value={each.id}>{`Prizepool ${
+          {gameTypePrizepool.map((each, i) => (
+            <option key={each.prizepool} value={each.prizepool}>{`Prizepool ${
               i + 1
             }`}</option>
           ))}
@@ -140,11 +149,7 @@ function StepperPage2({
                     className="h-10 w-full focus:outline-none text-center"
                     type="number"
                     min="1"
-                    value={
-                      selectedPrizepool
-                        ? selectedPrizepool.prizepool.prizeData[i].min
-                        : row.min
-                    }
+                    value={row.min}
                     onChange={(e) => handleRowChange(i, "min", e.target.value)}
                   />
                 </td>
@@ -153,11 +158,7 @@ function StepperPage2({
                     className="h-10 w-full focus:outline-none text-center"
                     type="number"
                     min="1"
-                    value={
-                      selectedPrizepool
-                        ? selectedPrizepool.prizepool.prizeData[i].max
-                        : row.max
-                    }
+                    value={row.max}
                     onChange={(e) => handleRowChange(i, "max", e.target.value)}
                   />
                 </td>
@@ -166,11 +167,7 @@ function StepperPage2({
                     className="h-10 w-full focus:outline-none text-center"
                     type="number"
                     min="1"
-                    value={
-                      selectedPrizepool
-                        ? selectedPrizepool.prizepool.prizeData[i].amount
-                        : row.amount
-                    }
+                    value={row.amount}
                     onChange={(e) =>
                       handleRowChange(i, "amount", e.target.value)
                     }
