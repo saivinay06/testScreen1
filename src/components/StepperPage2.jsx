@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { dummyPrizepools } from "../data";
+import { User, Users } from "lucide-react";
 
 function StepperPage2({
   interaction,
@@ -8,7 +9,6 @@ function StepperPage2({
   prizeData,
   setPrizeData,
   handleRowChange,
-  handleAddRow,
   totalAmount,
   amountRemaining,
   packageRows,
@@ -42,18 +42,18 @@ function StepperPage2({
   };
 
   const handleAddNewRow = () => {
-    if (amountRemaining > 0) {
+    if (amountRemaining !== 0 || prizeData.length === 0) {
       setPrizeData((prev) => [...prev, { min: "", max: "", amount: "" }]);
 
-      setSelectedPrizepool((prev) => {
-        if (!prev) return null;
-        const updatedPrizepool = { ...prev };
-        updatedPrizepool.prizepool.prizeData = [
-          ...updatedPrizepool.prizepool.prizeData,
-          { min: "", max: "", amount: "" },
-        ];
-        return updatedPrizepool;
-      });
+      // setSelectedPrizepool((prev) => {
+      //   if (!prev) return null;
+      //   const updatedPrizepool = { ...prev };
+      //   updatedPrizepool.prizepool.prizeData = [
+      //     ...updatedPrizepool.prizepool.prizeData,
+      //     { min: "", max: "", amount: "" },
+      //   ];
+      //   return updatedPrizepool;
+      // });
     }
   };
 
@@ -121,15 +121,15 @@ function StepperPage2({
             <tr>
               <th
                 className="border px-4 py-2 text-gray-800 font-medium"
-                colSpan="2"
+                colSpan={2}
               >
                 Positions
               </th>
-              <th className="border border-b-white px-4 py-2 text-gray-800 font-medium">
+              <th className="border px-4 py-2 text-gray-800 font-medium">
                 Amount
               </th>
             </tr>
-            <tr>
+            {/* <tr>
               <th className="border px-4 py-2 text-gray-800 font-medium">
                 Minimum
               </th>
@@ -139,29 +139,48 @@ function StepperPage2({
               <th className="border px-4 py-2 text-gray-800 font-medium">
                 (Rupee)
               </th>
-            </tr>
+            </tr> */}
           </thead>
           <tbody>
             {prizeData.map((row, i) => (
               <tr key={i}>
-                <td className="border px-2 py-1">
-                  <input
-                    className="h-10 w-full focus:outline-none text-center"
-                    type="number"
-                    min="1"
-                    value={row.min}
-                    onChange={(e) => handleRowChange(i, "min", e.target.value)}
-                  />
-                </td>
-                <td className="border px-2 py-1">
-                  <input
-                    className="h-10 w-full focus:outline-none text-center"
-                    type="number"
-                    min="1"
-                    value={row.max}
-                    onChange={(e) => handleRowChange(i, "max", e.target.value)}
-                  />
-                </td>
+                {row.max === "0" ? (
+                  <td className="border px-2 py-1" colSpan={2}>
+                    <div className="flex items-center justify-between">
+                      <input
+                        className="h-10 w-full focus:outline-none text-center"
+                        type="number"
+                        min="1"
+                        value={row.min}
+                      />
+                    </div>
+                  </td>
+                ) : (
+                  <>
+                    <td className="border px-2 py-1">
+                      <input
+                        className="h-10 w-full focus:outline-none text-center"
+                        type="number"
+                        min="1"
+                        value={row.min}
+                        onChange={(e) =>
+                          handleRowChange(i, "min", e.target.value)
+                        }
+                      />
+                    </td>
+                    <td className="border px-2 py-1">
+                      <input
+                        className="h-10 w-full focus:outline-none text-center"
+                        type="number"
+                        min="1"
+                        value={row.max}
+                        onChange={(e) =>
+                          handleRowChange(i, "max", e.target.value)
+                        }
+                      />
+                    </td>
+                  </>
+                )}
                 <td className="border px-2 py-1">
                   <input
                     className="h-10 w-full focus:outline-none text-center"

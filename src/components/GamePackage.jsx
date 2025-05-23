@@ -6,15 +6,24 @@ import StepperPage1 from "./StepperPage1";
 import StepperPage2 from "./StepperPage2";
 import { dummyPackages } from "../data";
 import { gameConfig } from "../data";
+import Filter from "./Filter";
+
+const defaultFiltered = gameConfig.map((item) => item["name"]);
 
 const stepperArr = Array.from({ length: 2 });
 
 function GamePackage() {
+  const [showBubble, setShowBubble] = useState(false);
   const [packageRows, setPackageRows] = useState(dummyPackages);
+  const [updatedPackage, setUpdatedPackage] = useState(packageRows || []);
   const [gameTypePrizepool, setGameTypePrizepool] = useState([]);
   const [accessNextPage, setAccessNextPage] = useState(false);
-
+  const [selectedFilterBoxes, setSelectedFilterBoxes] = useState([]);
+  const [filterType, setFilterType] = useState(defaultFiltered);
+  const [activeFilter, setActiveFilter] = useState("gameType");
   const [currActiveTab, setCurrActiveTab] = useState(1);
+  const [currActiveGame, setCurrActiveGame] = useState([]);
+  const [packageKey, setPackageKey] = useState("");
 
   const [userInteraction, setUserInteraction] = useState({
     currGame: "",
@@ -29,7 +38,7 @@ function GamePackage() {
   const [amountRemaining, setAmountRemaining] = useState();
   const [totalAmount, setTotalAmount] = useState();
   const [prizeData, setPrizeData] = useState([
-    { min: "1", max: "", amount: "" },
+    { min: "1", max: "0", amount: "" },
   ]);
 
   const dialogRef = useRef(null);
@@ -58,6 +67,14 @@ function GamePackage() {
     setTotalAmount(total);
     setAmountRemaining(total - usedAmount);
   }, [prizeData, userInteraction]);
+
+  useEffect(() => {
+    if (
+      !selectedFilterBoxes.some((each) => each === "Ludo" || each === "Rummy")
+    ) {
+      setUpdatedPackage(packageRows);
+    }
+  }, [selectedFilterBoxes]);
 
   const handleAdd = () => {
     dialogRef.current?.showModal();
@@ -93,18 +110,25 @@ function GamePackage() {
   };
 
   const handleAddRow = () => {
-    if (amountRemaining !== 0) {
+    console.log(prizeData.length);
+    if (amountRemaining !== 0 && prizeData.length === 0) {
       setPrizeData((prev) => [...prev, { min: "", max: "", amount: "" }]);
     }
   };
 
   const handleRowChange = (index, field, value) => {
     const updated = [...prizeData];
-    updated[index][field] = parseInt(value);
+    updated[index][field] = value;
 
-    const isGreater = parseInt(value) > parseInt(userInteraction.playersCount);
+    const cleaned = updated.filter(
+      (row) => row.min !== "" || row.max !== "" || row.amount !== ""
+    );
 
-    if (!(field === "amount") && isGreater) {
+    const isGreater =
+      (field === "min" || field === "max") &&
+      parseInt(value) > parseInt(userInteraction.playersCount);
+
+    if (isGreater) {
       setUserInteraction((prev) => ({
         ...prev,
         errorText: `Prizepool positions cannot exceed number of players in game`,
@@ -115,7 +139,7 @@ function GamePackage() {
     if (
       field === "min" &&
       index > 0 &&
-      Number(value) <= Number(prizeData[index - 1].max)
+      parseInt(value) <= parseInt(prizeData[index - 1].max)
     ) {
       setUserInteraction((prev) => ({
         ...prev,
@@ -125,7 +149,7 @@ function GamePackage() {
     }
 
     setUserInteraction((prev) => ({ ...prev, errorText: "" }));
-    setPrizeData(updated);
+    setPrizeData(cleaned);
 
     if (field === "amount") {
       calculateAmount();
@@ -163,6 +187,41 @@ function GamePackage() {
     }
   };
 
+  const handleCheckbox = (val, e) => {
+    const { checked } = e.target;
+
+    setSelectedFilterBoxes((prevSelected) => {
+      const newSelected = checked
+        ? [...prevSelected, val]
+        : prevSelected.filter((item) => item !== val);
+
+      const filtered = dummyPackages.filter((pkg) =>
+        newSelected.includes(pkg[activeFilter])
+      );
+
+      if (activeFilter === "gameType") {
+        const activeGames = gameConfig.filter((each) =>
+          newSelected.includes(each.name)
+        );
+
+        setCurrActiveGame(activeGames);
+      }
+
+      setUpdatedPackage(filtered);
+      return newSelected;
+    });
+  };
+
+  const handleFilterClick = (val, type) => {
+    const filtered = gameConfig
+      .flatMap((item) => item[val])
+      .filter((each, i, self) => self.indexOf(each) === i);
+
+    setFilterType(filtered);
+    setActiveFilter(type);
+    setPackageKey(val);
+  };
+
   const handleEntryFee = (e) => {
     setUserInteraction((prev) => ({ ...prev, errorText: "" }));
     const entryFee = Number(e.target.value) || 0;
@@ -173,6 +232,10 @@ function GamePackage() {
       setTotalAmount(userInteraction.entryFee * userInteraction.playersCount);
     }
   };
+
+  // const checkIsDisabled = (val) => {
+  //   currActiveGame[packageKey].in;
+  // };
 
   const handleCreateRow = () => {
     setCurrActiveTab(1);
@@ -239,22 +302,122 @@ function GamePackage() {
   };
 
   return (
-    <div className="font-poppins h-screen w-full py-5 px-20">
-      <div className="flex justify-end">
-        <div className="flex items-center gap-8">
-          <div className="inline-flex items-center gap-1 border border-stone-300 px-4 py-1 rounded-lg cursor-pointer">
+    <div className="font-poppins relative h-screen w-full py-5 px-20">
+      {/* <div className="flex justify-end"></div> */}
+      <div className="flex gap-12 items-center justify-between">
+        <h1 className="text-2xl font-semibold">Current Packages</h1>
+        <div className="flex items-center gap-5">
+          {/* <div
+            onClick={handleFilterClick}
+            className="inline-flex items-center gap-1 rounded-lg cursor-pointer"
+          >
             <FilterIcon size={20} />
             <p>Filter</p>
+          </div> */}
+          <div className="relative">
+            <div
+              onMouseEnter={() => setShowBubble(true)}
+              className="inline-flex items-center gap-1 border border-stone-300 px-4 py-1 rounded-lg cursor-pointer"
+            >
+              <FilterIcon size={20} />
+              <p>Filter</p>
+            </div>
+
+            {showBubble && (
+              <>
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-10"
+                  onMouseLeave={() => setShowBubble(false)}
+                >
+                  <div className="w-0 h-0 mx-auto border-l-8 border-r-8 border-b-8 border-transparent border-b-white"></div>
+
+                  <div className="bg-white rounded-lg shadow-md text-sm w-72 flex justify-between relative">
+                    <div className="flex flex-col justify-between w-[50%] bg-slate-50 rounded-md">
+                      <button
+                        className={`w-full py-4 px-4 text-left transition-all ease duration-200 hover:bg-slate-100 rounded-md ${
+                          activeFilter === "gameType" ? "bg-slate-200" : ""
+                        } `}
+                        onClick={() => handleFilterClick("name", "gameType")}
+                      >
+                        Game type
+                      </button>
+                      <button
+                        className={`w-full py-4 px-4 text-left transition-all ease duration-200 hover:bg-slate-100 rounded-md ${
+                          activeFilter === "gameMode" ? "bg-slate-200" : ""
+                        } `}
+                        onClick={() => handleFilterClick("modes", "gameMode")}
+                      >
+                        Game mode
+                      </button>
+                      <button
+                        className={`w-full py-4 px-4 text-left transition-all ease duration-200 hover:bg-slate-100 rounded-md ${
+                          activeFilter === "tier" ? "bg-slate-200" : ""
+                        } `}
+                        onClick={() => handleFilterClick("tiers", "tier")}
+                      >
+                        Tier
+                      </button>
+                      <button
+                        className="w-full py-4 px-4 text-left transition-all ease duration-200 hover:bg-slate-100 rounded-md"
+                        // onClick={() => handleFilterClick("modes")}
+                      >
+                        Entry fee
+                      </button>
+                      <button
+                        className={`w-full py-4 px-4 text-left transition-all ease duration-200 hover:bg-slate-100 rounded-md ${
+                          activeFilter === "players" ? "bg-slate-200" : ""
+                        } `}
+                        onClick={() =>
+                          handleFilterClick("playerCount", "players")
+                        }
+                      >
+                        Player count
+                      </button>
+                    </div>
+                    {/* <div className="w-px h-40 bg-black" /> */}
+                    <div className="w-[50%] p-5">
+                      {filterType &&
+                        filterType.map((each) => (
+                          <div className="flex items-center gap-3 mb-3">
+                            <input
+                              type="checkbox"
+                              className="border border-black"
+                              checked={selectedFilterBoxes.includes(each)}
+                              onChange={(e) => handleCheckbox(each, e)}
+                              value={each}
+                              disabled={
+                                currActiveGame.length > 0 &&
+                                packageKey &&
+                                packageKey !== "name" &&
+                                !currActiveGame.some((game) =>
+                                  game[packageKey].includes(each)
+                                )
+                              }
+                              id={each}
+                            />
+                            <label htmlFor={each}>{each}</label>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-          <div className="inline-flex items-center gap-1 border border-stone-300 px-4 py-1 rounded-lg cursor-pointer">
-            <ArrowDownUp />
+
+          <div className="w-px h-6 bg-black" />
+          <div className="inline-flex items-center gap-1 rounded-lg cursor-pointer">
+            <ArrowDownUp size={20} />
             <p>Sort</p>
           </div>
         </div>
       </div>
-      <h1 className="text-2xl mt-5 font-semibold">Current Packages</h1>
+
       <div className="border border-gray-300 rounded-lg overflow-hidden shadow-md my-2">
-        <PackageTable data={packageRows} setData={setPackageRows} />
+        <PackageTable
+          data={filterType ? updatedPackage : packageRows}
+          setData={setPackageRows}
+        />
       </div>
       <button
         className="border rounded-xl py-2 px-4 bg-black text-white"
@@ -314,6 +477,7 @@ function GamePackage() {
           </div>
         </div>
       </dialog>
+      {/* <Filter active={filterActive} /> */}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { dummyPrizepools, gameConfig } from "../data";
+import { X } from "lucide-react";
 
 function PackageTable({ data, setData }) {
   const [currentClicked, setCurrentClicked] = useState(null);
@@ -116,6 +117,10 @@ function PackageTable({ data, setData }) {
     setAmountRemaining((totalAmount || 0) - usedAmount);
   };
 
+  const handleClose = () => {
+    dialogRef.current.close();
+  };
+
   const handleEntryFee = (e) => {
     // setUserInteraction((prev) => ({ ...prev, errorText: "" }));
     setErrorText("");
@@ -158,7 +163,7 @@ function PackageTable({ data, setData }) {
           </tr>
         </thead>
         <tbody>
-          {data.map((each, _) => (
+          {data.map((each, i) => (
             <tr
               key={each.id}
               onClick={() => handleRowClick(each.id)}
@@ -179,9 +184,13 @@ function PackageTable({ data, setData }) {
           ref={dialogRef}
           className="relative w-[50%] p-5 max-h-max rounded-xl shadow-xl"
         >
-          <h1 className="text-center font-semibold text-2xl mb-5">
-            {currentClicked.gameType}
-          </h1>
+          <div className="w-[55%] ml-auto flex justify-between items-center mb-6">
+            <h1 className="text-center font-semibold text-2xl">
+              {currentClicked.gameType}
+            </h1>
+            <X onClick={handleClose} className="cursor-pointer" />
+          </div>
+
           <div className={`flex ${isEdit ? "justify-between" : "flex-col"}`}>
             <div className="">
               {isEdit ? (
