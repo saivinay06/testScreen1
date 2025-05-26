@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { dummyPrizepools, gameConfig } from "../data";
-import { X } from "lucide-react";
+import { IndianRupee, X } from "lucide-react";
 
 function PackageTable({ data, setData }) {
   const [currentClicked, setCurrentClicked] = useState(null);
@@ -153,27 +153,32 @@ function PackageTable({ data, setData }) {
   return (
     <>
       <table className="table-auto w-full">
-        <thead className="bg-gray-100">
+        <thead className="text-[#A9A9B7] text-[16px]">
           <tr>
-            <th className="border border-gray-300 px-1 py-2">S.No</th>
-            <th className="border border-gray-300 px-4 py-2">Game type</th>
-            <th className="border border-gray-300 px-4 py-2">Game mode</th>
-            <th className="border border-gray-300 px-4 py-2">Tier</th>
-            <th className="border border-gray-300 px-4 py-2">Entry fee </th>
+            <th className="text-start pb-8">S.no</th>
+            <th className="text-start pb-8">Game Type</th>
+            <th className="text-start pb-8">Game Mode</th>
+            <th className="text-start pb-8">Tier</th>
+            <th className="text-end pb-8">Entry Fee </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="">
           {data.map((each, i) => (
             <tr
               key={each.id}
               onClick={() => handleRowClick(each.id)}
-              className="hover:bg-slate-200 cursor-pointer"
+              className="hover:bg-slate-200 cursor-pointer text-center border-b border-b-gray-300/10 text-sm"
             >
-              <td className="px-4 py-2">{each.id}</td>
-              <td className="px-4 py-2">{each.gameType}</td>
-              <td className="px-4 py-2">{each.gameMode}</td>
-              <td className="px-4 py-2">{each.tier}</td>
-              <td className="px-4 py-2">{each.entryFee}</td>
+              <td className="text-start pb-5">{each.id}</td>
+              <td className="text-start text-[#A9A9B7] pb-5">
+                {each.gameType}
+              </td>
+              <td className="text-start pb-5">{each.gameMode}</td>
+              <td className="text-start text-[#A9A9B7] pb-5">{each.tier}</td>
+              <td className="flex justify-end items-center pb-5">
+                <IndianRupee size={15} />
+                {each.entryFee}
+              </td>
             </tr>
           ))}
         </tbody>

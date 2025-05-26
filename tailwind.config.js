@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        poppins: ["Poppins", "sans-serif"],
+        helveticaBold: ['"Helvetica Neue LT Std Bold Extended"', "sans-serif"],
       },
     },
   },

@@ -45,7 +45,7 @@ export const dummyPackages = [
   },
   {
     id: 5,
-    gameType: "Rummy",
+    gameType: "Rummy_1",
     gameMode: "Quick Match",
     tier: "Basic",
     entryFee: 200,

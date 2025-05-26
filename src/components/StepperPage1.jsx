@@ -7,15 +7,17 @@ function StepperPage1({
   setInteraction,
 }) {
   return (
-    <div className="flex justify-between gap-12">
-      <div className="flex flex-col gap-12">
-        <div className="flex items-center justify-between gap-10 w-72">
+    <div className="flex flex-col justify-between gap-16">
+      <div className="flex justify-between">
+        <div className="flex justify-center items-center w-60 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
           {/* <p className="font-medium">Game type :</p> */}
           <select
             onChange={handleGameChange}
-            className="w-72 border border-stone-600 p-2 rounded-lg"
+            className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-thin text-sm outline-none"
           >
-            <option value="">Game type</option>
+            <option value="" disabled>
+              Game type
+            </option>
             {gameConfig.map((obj, i) => (
               <option key={i} value={obj.name}>
                 {obj.name}
@@ -23,48 +25,54 @@ function StepperPage1({
             ))}
           </select>
         </div>
-        <div className="flex items-center justify-between gap-10 w-72">
-          {/* <p className="font-medium">Game mode :</p> */}
-          <select
-            className="w-72 border border-stone-600 p-2 rounded-lg"
-            onChange={(e) =>
-              setInteraction((prev) => ({ ...prev, mode: e.target.value }))
-            }
-          >
-            <option value="">Game mode</option>
-            {interaction.currGame &&
-              interaction.currGame.modes.map((each, i) => (
-                <option key={i} value={each}>
-                  {each}
-                </option>
-              ))}
-          </select>
-        </div>
-        <div className="flex items-center justify-between gap-10 w-72">
-          {/* <p className="font-medium">Tier :</p> */}
-          <select
-            className="w-72 border border-stone-600 p-2 rounded-lg"
-            onChange={(e) =>
-              setInteraction((prev) => ({ ...prev, tier: e.target.value }))
-            }
-          >
-            <option value="">Tier</option>
-            {interaction.currGame &&
-              interaction.currGame.tiers.map((each, i) => (
-                <option key={i} value={each}>
-                  {each}
-                </option>
-              ))}
-          </select>
+        <div className="flex gap-5 items-center h-15">
+          <div className="flex justify-center items-center w-60 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
+            {/* <p className="font-medium">Game mode :</p> */}
+            <select
+              className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-thin text-sm outline-none"
+              onChange={(e) =>
+                setInteraction((prev) => ({ ...prev, mode: e.target.value }))
+              }
+            >
+              <option value="" disabled>
+                Game mode
+              </option>
+              {interaction.currGame &&
+                interaction.currGame.modes.map((each, i) => (
+                  <option key={i} value={each}>
+                    {each}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div className="flex justify-center items-center w-60 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
+            {/* <p className="font-medium">Tier :</p> */}
+            <select
+              className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-thin text-sm outline-none"
+              onChange={(e) =>
+                setInteraction((prev) => ({ ...prev, tier: e.target.value }))
+              }
+            >
+              <option value="" disabled>
+                Tier
+              </option>
+              {interaction.currGame &&
+                interaction.currGame.tiers.map((each, i) => (
+                  <option key={i} value={each}>
+                    {each}
+                  </option>
+                ))}
+            </select>
+          </div>
         </div>
       </div>
-      <div className="flex flex-col gap-12">
-        <div>
+      <div className="flex justify-between gap-12">
+        <div className="w-[50%] border border-[#464646] bg-[#0F0F13] p-4 rounded-2xl">
           <input
             type="number"
             placeholder="Min wait time (seconds)"
             name="minWaitTime"
-            className="ml-2 w-72 p-2 pl-1 border border-stone-500 rounded-md focus:outline-none"
+            className="w-full h-full bg-transparent text-[#ffffff] rounded-lg font-thin text-sm focus:outline-none"
             onChange={(e) =>
               setInteraction((prev) => ({
                 ...prev,
@@ -73,12 +81,12 @@ function StepperPage1({
             }
           />
         </div>
-        <div>
+        <div className="w-[50%] border border-[#464646] bg-[#0F0F13] p-4 rounded-2xl">
           <input
             type="number"
             placeholder="Max wait time (seconds)"
             name="maxWaitTime"
-            className="ml-2 w-72 p-2 pl-1 border border-stone-500 rounded-md focus:outline-none"
+            className="w-full h-full bg-transparent text-white rounded-lg font-thin text-sm focus:outline-none"
             onChange={(e) =>
               setInteraction((prev) => ({
                 ...prev,

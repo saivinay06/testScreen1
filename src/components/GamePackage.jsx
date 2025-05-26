@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowDownUp, FilterIcon, X } from "lucide-react";
+import { ArrowDownUp, FilterIcon, Plus, X } from "lucide-react";
 import Stepper from "./Stepper";
 import PackageTable from "./PackageTable";
 import StepperPage1 from "./StepperPage1";
@@ -302,11 +302,10 @@ function GamePackage() {
   };
 
   return (
-    <div className="font-poppins relative h-screen w-full py-5 px-20">
-      {/* <div className="flex justify-end"></div> */}
-      <div className="flex gap-12 items-center justify-between">
-        <h1 className="text-2xl font-semibold">Current Packages</h1>
-        <div className="flex items-center gap-5">
+    <div className="font-helveticaBold relative h-screen w-full bg-[#0F0F13] text-[#FFFFFF]">
+      <div className="border-b border-b-gray-300/10 py-6 px-10">
+        <h1 className="text-3xl font-semibold">Current Packages</h1>
+        <div className="flex items-center gap-5 justify-end">
           {/* <div
             onClick={handleFilterClick}
             className="inline-flex items-center gap-1 rounded-lg cursor-pointer"
@@ -314,12 +313,19 @@ function GamePackage() {
             <FilterIcon size={20} />
             <p>Filter</p>
           </div> */}
-          <div className="relative">
+          <div className="relative text-sm font-light flex items-center gap-5">
+            <div
+              className="inline-flex items-center bg-[#1E1E24] py-2 px-3 rounded-2xl gap-2 cursor-pointer"
+              onClick={handleAdd}
+            >
+              <Plus size={17} />
+              <p>Add new package</p>
+            </div>
             <div
               onMouseEnter={() => setShowBubble(true)}
-              className="inline-flex items-center gap-1 border border-stone-300 px-4 py-1 rounded-lg cursor-pointer"
+              className="inline-flex items-center bg-[#1E1E24] py-2 px-3 rounded-2xl gap-2 cursor-pointer"
             >
-              <FilterIcon size={20} />
+              <FilterIcon size={15} />
               <p>Filter</p>
             </div>
 
@@ -403,49 +409,42 @@ function GamePackage() {
                 </div>
               </>
             )}
-          </div>
-
-          <div className="w-px h-6 bg-black" />
-          <div className="inline-flex items-center gap-1 rounded-lg cursor-pointer">
-            <ArrowDownUp size={20} />
-            <p>Sort</p>
+            <div className="inline-flex items-center bg-[#1E1E24] py-2 px-3 rounded-2xl gap-2 cursor-pointer">
+              <ArrowDownUp size={15} />
+              <p>Sort</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="border border-gray-300 rounded-lg overflow-hidden shadow-md my-2">
+      <div className="px-10 py-6">
         <PackageTable
           data={filterType ? updatedPackage : packageRows}
           setData={setPackageRows}
         />
       </div>
-      <button
-        className="border rounded-xl py-2 px-4 bg-black text-white"
-        onClick={handleAdd}
-      >
-        Add new package
-      </button>
+
       <dialog
         ref={dialogRef}
-        className="relative w-[50%] max-h-max rounded-xl shadow-xl"
+        className="relative w-[50%] max-h-max rounded-xl shadow-xl bg-[#0F0F13]"
       >
         <div className="flex flex-col justify-between h-full p-5">
           <div>
             <div className="text-end">
               <button onClick={handlePackageClose}>
-                <X />
+                <X style={{ color: "white" }} />
               </button>
             </div>
             <div className="m-auto w-[70%]">
               <Stepper active={currActiveTab} arr={stepperArr} />
             </div>
 
-            <div className="my-12 h-full w-[90%] m-auto">
+            <div className="my-20 h-full w-[90%] m-auto">
               {displayFields(currActiveTab)}
             </div>
           </div>
 
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end m-auto gap-4 w-[90%] mb-4">
             {/* <button 10="border border-stone-500 px-6 py-2 rounded-xl w-24">
                 Cancel
               </button> */}
@@ -467,8 +466,10 @@ function GamePackage() {
             ) : (
               <button
                 className={`${
-                  accessNextPage ? "bg-black" : "bg-slate-200"
-                } px-6 py-2 rounded-xl text-white w-24`}
+                  accessNextPage
+                    ? "bg-[#DAFD24] text-black"
+                    : "bg-[#2e2d2d8a] text-[#ffffff23]"
+                } px-6 py-3 rounded-2xl text-sm w-24`}
                 onClick={handleNext}
               >
                 Next

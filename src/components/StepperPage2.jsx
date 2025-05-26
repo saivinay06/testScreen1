@@ -16,6 +16,10 @@ function StepperPage2({
 }) {
   const [selectedPrizepool, setSelectedPrizepool] = useState(null);
 
+  const [isOn, setIsOn] = useState(false);
+
+  const toggleSwitch = () => setIsOn((prev) => !prev);
+
   const handlePrizepool = (e) => {
     const prizepoolId = e.target.value;
     console.log(prizepoolId);
@@ -60,23 +64,26 @@ function StepperPage2({
   return (
     <>
       <div className="flex justify-between items-center">
-        <select
-          className="w-44 border border-stone-500 p-2 rounded-lg"
-          onChange={handlePrizepool}
-        >
-          <option value="" selected>
-            Existing prizepools
-          </option>
-          {gameTypePrizepool.map((each, i) => (
-            <option key={each.prizepool} value={each.prizepool}>{`Prizepool ${
-              i + 1
-            }`}</option>
-          ))}
-        </select>
+        <div className="flex justify-center items-center w-50 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
+          <select
+            className="w-full h-full cursor-pointer bg-transparent text-[#ffffffb6] rounded-lg font-thin text-sm outline-none"
+            onChange={handlePrizepool}
+          >
+            <option value="" disabled>
+              Existing prizepools
+            </option>
+            {gameTypePrizepool.map((each, i) => (
+              <option key={each.prizepool} value={each.prizepool}>{`Prizepool ${
+                i + 1
+              }`}</option>
+            ))}
+          </select>
+        </div>
+
         <div className="flex items-center gap-5">
-          <div className="flex items-center justify-between gap-10">
+          <div className="flex justify-center items-center w-50 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
             <select
-              className="ml-2 w-32 p-2 text-sm pl-1 border border-stone-500 rounded-md focus:outline-none"
+              className="w-full h-full cursor-pointer bg-transparent text-[#ffffffb6] rounded-lg font-thin text-sm outline-none"
               value={interaction.playersCount}
               onChange={(e) =>
                 setInteraction((prev) => ({
@@ -94,13 +101,13 @@ function StepperPage2({
                 ))}
             </select>
           </div>
-          <div>
+          <div className="flex justify-center items-center w-48 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
             {/* <label>Entry fee</label> */}
             <input
               placeholder="Entry fee"
               type="number"
               min="0"
-              className="ml-2 w-32 p-2 text-sm pl-1 border border-stone-500 rounded-md focus:outline-none"
+              className="w-full h-full cursor-pointer bg-transparent text-[#ffffffb6] rounded-lg font-thin text-sm outline-none"
               onChange={handleEntryFee}
               defaultValue={selectedPrizepool && selectedPrizepool.entryFee}
             />
@@ -108,24 +115,27 @@ function StepperPage2({
         </div>
       </div>
 
-      <div className="flex justify-between mt-10 mb-2">
-        <h5 className="font-semibold text-lg">Prizepool</h5>
+      <div className="flex justify-between mt-10 mb-3">
+        <h5 className="font-semibold text-lg text-[#ffffff]">Prizepool</h5>
         {interaction.errorText && (
           <p className="text-red-500 text-sm">* {interaction.errorText}</p>
         )}
       </div>
 
-      <div className="border border-gray-300 rounded-lg overflow-hidden">
-        <table className="table-auto w-full" style={{ tableLayout: "fixed" }}>
+      <div className="border border-[#464646] rounded-2xl overflow-hidden">
+        <table
+          className="table-auto border-none w-full"
+          style={{ tableLayout: "fixed" }}
+        >
           <thead>
             <tr>
               <th
-                className="border px-4 py-2 text-gray-800 font-medium"
+                className="px-4 py-5 border-r border-r-[#464646] text-[#ffffff] font-extralight"
                 colSpan={2}
               >
                 Positions
               </th>
-              <th className="border px-4 py-2 text-gray-800 font-medium">
+              <th className="px-4 py-5 text-[#ffffff] font-extralight">
                 Amount
               </th>
             </tr>
@@ -145,21 +155,45 @@ function StepperPage2({
             {prizeData.map((row, i) => (
               <tr key={i}>
                 {row.max === "0" ? (
-                  <td className="border px-2 py-1" colSpan={2}>
+                  <td className="border border-[#464646] px-2 py-1" colSpan={2}>
                     <div className="flex items-center justify-between">
                       <input
-                        className="h-10 w-full focus:outline-none text-center"
+                        className="h-10 w-full focus:outline-none text-center bg-transparent text-white"
                         type="number"
                         min="1"
                         value={row.min}
                       />
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={toggleSwitch}
+                          className={`relative w-16 h-7 flex items-center justify-between rounded-full transition-colors duration-300 ${
+                            isOn ? "bg-[#1E1E24]" : "bg-[#1E1E24]"
+                          }`}
+                        >
+                          <div
+                            className={`flex items-center justify-center w-8 h-full rounded-full shadow-md transform duration-300 ${
+                              isOn
+                                ? "translate-x-8 bg-[#DAFD24]"
+                                : "translate-x-0"
+                            }`}
+                          ></div>
+                          <User
+                            size={18}
+                            className={`absolute left-2`}
+                            style={
+                              isOn ? { color: "black" } : { color: "A1A1A1" }
+                            }
+                          />
+                          <Users size={18} className="absolute right-1" />
+                        </button>
+                      </div>
                     </div>
                   </td>
                 ) : (
                   <>
-                    <td className="border px-2 py-1">
+                    <td className="border border-[#464646] px-2 py-1">
                       <input
-                        className="h-10 w-full focus:outline-none text-center"
+                        className="h-10 w-full focus:outline-none text-center text-white bg-transparent"
                         type="number"
                         min="1"
                         value={row.min}
@@ -168,9 +202,9 @@ function StepperPage2({
                         }
                       />
                     </td>
-                    <td className="border px-2 py-1">
+                    <td className="border border-[#464646] px-2 py-1">
                       <input
-                        className="h-10 w-full focus:outline-none text-center"
+                        className="h-10 w-full focus:outline-none text-center text-white bg-transparent"
                         type="number"
                         min="1"
                         value={row.max}
@@ -181,9 +215,9 @@ function StepperPage2({
                     </td>
                   </>
                 )}
-                <td className="border px-2 py-1">
+                <td className="border border-[#464646] px-2 py-1">
                   <input
-                    className="h-10 w-full focus:outline-none text-center"
+                    className="h-10 w-full focus:outline-none text-center bg-transparent text-white"
                     type="number"
                     min="1"
                     value={row.amount}
@@ -199,12 +233,12 @@ function StepperPage2({
       </div>
       <div className="flex justify-between my-3">
         <button
-          className="rounded-lg py-2 px-4 bg-black text-white text-sm"
+          className="rounded-2xl py-3 px-5 bg-[#1E1E24] text-white text-[14px]"
           onClick={handleAddNewRow}
         >
           Add row
         </button>
-        <div className="flex gap-5">
+        <div className="flex gap-5 text-white">
           <p>
             Total: <span>{totalAmount}</span>
           </p>

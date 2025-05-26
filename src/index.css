@@ -2,8 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Helvetica Neue LT Std Bold Extended";
+  src: url("/assets/fonts/HelveticaNeueBoldExt.otf") format("opentype");
+  font-weight: bold;
+  font-style: normal;
+}
+
+dialog::backdrop {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
 table,
 th,
 td {
   padding: 1rem;
+}
+
+input::placeholder {
+  color: #464646;
 }
