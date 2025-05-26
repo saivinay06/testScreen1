@@ -4,8 +4,12 @@ import Stepper from "./Stepper";
 import PackageTable from "./PackageTable";
 import StepperPage1 from "./StepperPage1";
 import StepperPage2 from "./StepperPage2";
-import { dummyPackages } from "../data";
+import { dummyPackages, dummyPrizepools } from "../data";
 import { gameConfig } from "../data";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.css";
 import Filter from "./Filter";
 
 const defaultFiltered = gameConfig.map((item) => item["name"]);
@@ -24,6 +28,7 @@ function GamePackage() {
   const [currActiveTab, setCurrActiveTab] = useState(1);
   const [currActiveGame, setCurrActiveGame] = useState([]);
   const [packageKey, setPackageKey] = useState("");
+  const [selectedPrizepoolId, setSelectedPrizepoolId] = useState("");
 
   const [userInteraction, setUserInteraction] = useState({
     currGame: "",
@@ -38,7 +43,7 @@ function GamePackage() {
   const [amountRemaining, setAmountRemaining] = useState();
   const [totalAmount, setTotalAmount] = useState();
   const [prizeData, setPrizeData] = useState([
-    { min: "1", max: "0", amount: "" },
+    { min: 0, max: 1, amount: 0, isMultiple: false },
   ]);
 
   const dialogRef = useRef(null);
@@ -59,7 +64,8 @@ function GamePackage() {
         calculateMinMax(
           parseFloat(row.min),
           parseFloat(row.max),
-          parseFloat(row.amount)
+          parseFloat(row.amount),
+          row.isMultiple
         ),
       0
     );
@@ -129,10 +135,9 @@ function GamePackage() {
       parseInt(value) > parseInt(userInteraction.playersCount);
 
     if (isGreater) {
-      setUserInteraction((prev) => ({
-        ...prev,
-        errorText: `Prizepool positions cannot exceed number of players in game`,
-      }));
+      toast.error(
+        "Prizepool positions cannot exceed number of players in game"
+      );
       return;
     }
 
@@ -141,10 +146,7 @@ function GamePackage() {
       index > 0 &&
       parseInt(value) <= parseInt(prizeData[index - 1].max)
     ) {
-      setUserInteraction((prev) => ({
-        ...prev,
-        errorText: "Min value must be greater than previous max",
-      }));
+      toast.error("Min value must be greater than previous max");
       return;
     }
 
@@ -156,12 +158,18 @@ function GamePackage() {
     }
   };
 
-  const calculateMinMax = (min, max, amount) => {
-    if (isNaN(min) || isNaN(max) || isNaN(amount) || max < min) {
-      return 0;
+  const calculateMinMax = (min, max, amount, isMultiple) => {
+    if (isMultiple) {
+      if (!min || !max || !amount || max < min) {
+        return 0;
+      }
+
+      const positions = max - min + 1;
+
+      return amount * positions;
     }
-    const positions = max - min + 1;
-    return amount * positions;
+
+    return amount;
   };
 
   const calculateAmount = () => {
@@ -173,7 +181,8 @@ function GamePackage() {
         calculateMinMax(
           parseFloat(row.min),
           parseFloat(row.max),
-          parseFloat(row.amount)
+          parseFloat(row.amount),
+          row.isMultiple
         ),
       0
     );
@@ -237,9 +246,37 @@ function GamePackage() {
   //   currActiveGame[packageKey].in;
   // };
 
+  const arePrizePoolsEqual = (a = [], b = []) => {
+    if (a.length !== b.length) return false;
+
+    return a.every((item, index) => {
+      const other = b[index];
+      return (
+        Number(item.min) === Number(other.min) &&
+        Number(item.max) === Number(other.max) &&
+        Number(item.amount) === Number(other.amount) &&
+        Boolean(item.isMultiple) === Boolean(other.isMultiple)
+      );
+    });
+  };
+
   const handleCreateRow = () => {
     setCurrActiveTab(1);
     dialogRef.current.close();
+
+    const prizepoolObj = dummyPrizepools.find(
+      (each) => each.id === selectedPrizepoolId
+    );
+
+    let id = prizepoolObj.id;
+
+    if (prizepoolObj && arePrizePoolsEqual(prizepoolObj.prizepool, prizeData)) {
+      id = prizepoolObj.id;
+    } else {
+      id = `prizepool-${dummyPrizepools.length + 1}`;
+      dummyPrizepools.push({ id, prizeData });
+      console.log({ id, prizeData });
+    }
 
     const {
       currGame,
@@ -251,22 +288,19 @@ function GamePackage() {
       maxWaitTime,
     } = userInteraction;
 
-    setPackageRows((prev) => {
-      return [
-        ...prev,
-        {
-          id: prev.length + 1,
-          gameType: currGame.name,
-          gameMode: mode,
-          tier,
-          entryFee,
-          prizepool: prizeData,
-          players: playersCount,
-          minQue: minWaitTime,
-          maxQue: maxWaitTime,
-        },
-      ];
-    });
+    const newRow = {
+      id: packageRows.length + 1,
+      gameType: currGame.name,
+      gameMode: mode,
+      tier,
+      entryFee,
+      prizepool: id,
+      players: playersCount,
+      minQue: minWaitTime,
+      maxQue: maxWaitTime,
+    };
+
+    setUpdatedPackage((prevRows) => [...prevRows, newRow]);
   };
 
   const displayFields = (step) => {
@@ -296,6 +330,7 @@ function GamePackage() {
             packageRows={packageRows}
             gameTypePrizepool={gameTypePrizepool}
             calculateAmount={calculateAmount}
+            setSelectedPrizepoolId={setSelectedPrizepoolId}
           />
         );
     }
@@ -421,6 +456,7 @@ function GamePackage() {
         <PackageTable
           data={filterType ? updatedPackage : packageRows}
           setData={setPackageRows}
+          setPrizeData={setPrizeData}
         />
       </div>
 
@@ -451,13 +487,13 @@ function GamePackage() {
             {currActiveTab === stepperArr.length ? (
               <div className="flex gap-5">
                 <button
-                  className="border border-black px-6 py-2 rounded-xl w-24"
+                  className="border px-6 py-2 rounded-xl w-24 text-white border-[#DAFD24] text-sm"
                   onClick={handleBack}
                 >
                   Back
                 </button>
                 <button
-                  className="bg-black px-6 py-2 rounded-xl text-white w-24"
+                  className="px-3 py-2 rounded-xl text-black w-24 bg-[#DAFD24] text-sm"
                   onClick={handleCreateRow}
                 >
                   Create
@@ -479,6 +515,7 @@ function GamePackage() {
         </div>
       </dialog>
       {/* <Filter active={filterActive} /> */}
+      <ToastContainer position="top-right" autoClose={3000} className="z-50" />
     </div>
   );
 }

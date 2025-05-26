@@ -4,9 +4,8 @@ function Stepper({ active, arr }) {
   return (
     <div className="flex items-center justify-center gap-3">
       {arr.map((_, i) => (
-        <>
+        <React.Fragment key={i}>
           <div
-            key={i}
             className={`flex items-center gap-3 rounded-[50%] border-[3px] ${
               active === i + 1
                 ? "border-[#DAFD24] text-black text-sm shadow-[0_40px_70px_-1px_rgba(218,253,36,0.6)]"
@@ -26,7 +25,7 @@ function Stepper({ active, arr }) {
               <div className="w-full border-[1.5px] border-[#464646]"></div>
             </div>
           )}
-        </>
+        </React.Fragment>
       ))}
     </div>
   );

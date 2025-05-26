@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { dummyPrizepools, gameConfig } from "../data";
+import { User, Users } from "lucide-react";
 import { IndianRupee, X } from "lucide-react";
 
-function PackageTable({ data, setData }) {
+function PackageTable({ data, setData, setPrizeData }) {
   const [currentClicked, setCurrentClicked] = useState(null);
   const [editedData, setEditedData] = useState(null);
   const [currGame, setCurrGame] = useState(null);
@@ -13,17 +14,15 @@ function PackageTable({ data, setData }) {
   const [totalAmount, setTotalAmount] = useState();
   const dialogRef = useRef(null);
 
-  useEffect(() => {
-    if (currentClicked && dialogRef.current) {
-      dialogRef.current.showModal();
-    }
-  }, [currentClicked]);
-
   const handleRowClick = (id) => {
+    setCurrentClicked(null);
     const resultObj = data.find((each) => each.id === id);
+    console.log(resultObj);
+
     const getTableData = dummyPrizepools.find(
       (each) => each.id === resultObj.prizepool
     );
+    console.log(getTableData);
     const currentGame = gameConfig.find(
       (each) => each.name === resultObj.gameType
     );
@@ -31,6 +30,10 @@ function PackageTable({ data, setData }) {
     setCurrGame(currentGame);
     setTableData(getTableData.prizeData);
     setCurrentClicked(resultObj);
+
+    if (dialogRef.current) {
+      dialogRef.current.showModal();
+    }
   };
 
   const handleEdit = () => {
@@ -150,6 +153,14 @@ function PackageTable({ data, setData }) {
     }
   };
 
+  const toggleSwitch = (index) => {
+    setPrizeData((prev) => {
+      return prev.map((row, i) =>
+        i === index ? { ...row, isMultiple: !row.isMultiple } : row
+      );
+    });
+  };
+
   return (
     <>
       <table className="table-auto w-full">
@@ -187,13 +198,13 @@ function PackageTable({ data, setData }) {
       {currentClicked && (
         <dialog
           ref={dialogRef}
-          className="relative w-[50%] p-5 max-h-max rounded-xl shadow-xl"
+          className="relative w-[50%] p-5 max-h-max rounded-xl shadow-xl bg-[#0F0F13]"
         >
           <div className="w-[55%] ml-auto flex justify-between items-center mb-6">
-            <h1 className="text-center font-semibold text-2xl">
+            <h1 className="text-center font-semibold text-2xl text-[#ffffff]">
               {currentClicked.gameType}
             </h1>
-            <X onClick={handleClose} className="cursor-pointer" />
+            <X onClick={handleClose} className="cursor-pointer text-white" />
           </div>
 
           <div className={`flex ${isEdit ? "justify-between" : "flex-col"}`}>
@@ -220,8 +231,8 @@ function PackageTable({ data, setData }) {
                   </select>
                 </div>
               ) : (
-                <p className="mb-3">
-                  <strong>Game mode: </strong>
+                <p className="mb-3 text-[#ffffffb6] text-sm">
+                  <strong className="text-white text-base">Game mode: </strong>
                   {currentClicked.gameMode}
                 </p>
               )}
@@ -254,8 +265,8 @@ function PackageTable({ data, setData }) {
                   </select>
                 </div>
               ) : (
-                <p className="mb-3">
-                  <strong>Tier: </strong>
+                <p className="mb-3 text-[#ffffffb6] text-sm">
+                  <strong className="text-white text-base">Tier: </strong>
                   {currentClicked.tier}
                 </p>
               )}
@@ -282,8 +293,10 @@ function PackageTable({ data, setData }) {
                   // }
                 />
               ) : (
-                <p className="mb-3">
-                  <strong>Minimum wait time: </strong>
+                <p className="mb-3 text-[#ffffffb6] text-sm">
+                  <strong className="text-white text-base">
+                    Minimum wait time:{" "}
+                  </strong>
                   {currentClicked.minQue}
                 </p>
               )}
@@ -308,8 +321,10 @@ function PackageTable({ data, setData }) {
                   // }
                 />
               ) : (
-                <p className="mb-3">
-                  <strong>Maximum wait time: </strong>
+                <p className="mb-3 text-[#ffffffb6] text-sm">
+                  <strong className="text-white text-base">
+                    Maximum wait time:{" "}
+                  </strong>
                   {currentClicked.maxQue}
                 </p>
               )}
@@ -344,8 +359,10 @@ function PackageTable({ data, setData }) {
                     ))}
                 </select>
               ) : (
-                <p>
-                  <strong>Player count: </strong>
+                <p className="mb-3 text-[#ffffffb6] text-sm">
+                  <strong className="text-white text-base">
+                    Player count:{" "}
+                  </strong>
                   {currentClicked.players}
                 </p>
               )}
@@ -361,14 +378,14 @@ function PackageTable({ data, setData }) {
                   // defaultValue={selectedPrizepool && selectedPrizepool.entryFee}
                 />
               ) : (
-                <p>
-                  <strong>Entry fee: </strong>
+                <p className="mb-3 text-[#ffffffb6] text-sm">
+                  <strong className="text-white text-base">Entry fee: </strong>
                   {currentClicked.entryFee}
                 </p>
               )}
             </div>
-            {errorText && <p>* {errorText}</p>}
-            <div className="border border-gray-300 my-4 rounded-lg overflow-hidden">
+
+            <div className="border border-[#464646] rounded-2xl overflow-hidden my-5">
               <table
                 className="table-auto w-full"
                 style={{ tableLayout: "fixed" }}
@@ -376,67 +393,161 @@ function PackageTable({ data, setData }) {
                 <thead>
                   <tr>
                     <th
-                      className="border px-4 py-2 text-gray-800 font-medium"
-                      colSpan="2"
+                      className="px-4 py-5 border-r border-r-[#464646] text-[#ffffff] font-extralight"
+                      colSpan={2}
                     >
                       Positions
                     </th>
-                    <th className="border border-b-white px-4 py-2 text-gray-800 font-medium">
+                    <th className="px-4 py-5 text-[#ffffff] font-extralight">
                       Amount
-                    </th>
-                  </tr>
-                  <tr>
-                    <th className="border px-4 py-2 text-gray-800 font-medium">
-                      Minimum
-                    </th>
-                    <th className="border px-4 py-2 text-gray-800 font-medium">
-                      Maximum
-                    </th>
-                    <th className="border px-4 py-2 text-gray-800 font-medium">
-                      (Rupee)
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {tableData.map((row, i) => (
                     <tr key={i}>
-                      <td className="border px-2 py-1">
+                      {!row.isMultiple ? (
+                        <td
+                          className={`border border-[#464646] px-2 py-1 text-white`}
+                          colSpan={2}
+                        >
+                          {isEdit ? (
+                            <div className="relative flex items-center justify-between">
+                              <input
+                                className="h-10 w-full focus:outline-none text-center bg-transparent text-white"
+                                type="number"
+                                min="1"
+                                value={row.min}
+                                onChange={(e) =>
+                                  handleRowChange(i, "min", e.target.value)
+                                }
+                              />
+                              <div className="absolute right-1 flex items-center gap-4 mr-1">
+                                <button
+                                  onClick={() => toggleSwitch(i)}
+                                  className={`relative w-16 h-7 flex items-center justify-between rounded-full transition-colors duration-300 ${
+                                    tableData[i].isMultiple
+                                      ? "bg-[#1E1E24]"
+                                      : "bg-[#1E1E24]"
+                                  }`}
+                                >
+                                  <div
+                                    className={`flex items-center justify-center w-[2.2rem] h-full rounded-full shadow-md transform duration-300 bg-[#DAFD24] z-10" ${
+                                      tableData[i].isMultiple
+                                        ? "translate-x-8"
+                                        : "translate-x-0"
+                                    }`}
+                                  ></div>
+                                  <User
+                                    size={18}
+                                    className={`absolute left-[9px]`}
+                                    style={
+                                      tableData[i].isMultiple
+                                        ? { color: "#A1A1A1" }
+                                        : { color: "black" }
+                                    }
+                                  />
+                                  <Users
+                                    size={18}
+                                    className="absolute right-1"
+                                    style={
+                                      tableData[i].isMultiple
+                                        ? { color: "black" }
+                                        : { color: "#A1A1A1" }
+                                    }
+                                  />
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            row.min
+                          )}
+                        </td>
+                      ) : (
+                        <>
+                          <td className="border border-[#464646] px-2 py-1 text-white h-10 w-full bg-transparent text-center">
+                            {isEdit ? (
+                              <input
+                                className="h-10 w-full focus:outline-none text-center text-white bg-transparent"
+                                type="number"
+                                min="1"
+                                value={row.max || ""}
+                                onChange={(e) =>
+                                  handleRowChange(i, "max", e.target.value)
+                                }
+                              />
+                            ) : (
+                              row.min
+                            )}
+                          </td>
+                          <td
+                            className={`${
+                              isEdit &&
+                              "relative flex items-center justify-between"
+                            } text-white h-12 border border-[#464646] px-2 py-1 text-center`}
+                          >
+                            {isEdit ? (
+                              <>
+                                <input
+                                  className="h-full w-full focus:outline-none text-center text-white bg-transparent"
+                                  type="number"
+                                  min="1"
+                                  value={row.max}
+                                  onChange={(e) =>
+                                    handleRowChange(i, "max", e.target.value)
+                                  }
+                                />
+                                <div className="absolute right-1 flex items-center gap-4 mr-1">
+                                  <button
+                                    onClick={() => toggleSwitch(i)}
+                                    className={`relative w-16 h-7 flex items-center justify-between rounded-full transition-colors duration-300 ${
+                                      tableData[i].isMultiple
+                                        ? "bg-[#1E1E24]"
+                                        : "bg-[#1E1E24]"
+                                    }`}
+                                  >
+                                    <div
+                                      className={`flex items-center justify-center w-[2.2rem] h-full rounded-full shadow-md transform duration-300 bg-[#DAFD24] z-10" ${
+                                        tableData[i].isMultiple
+                                          ? "translate-x-8"
+                                          : "translate-x-0"
+                                      }`}
+                                    ></div>
+                                    <User
+                                      size={18}
+                                      className={`absolute left-[9px]`}
+                                      style={
+                                        tableData[i].isMultiple
+                                          ? { color: "#A1A1A1" }
+                                          : { color: "black" }
+                                      }
+                                    />
+                                    <Users
+                                      size={18}
+                                      className="absolute right-1"
+                                      style={
+                                        tableData[i].isMultiple
+                                          ? { color: "black" }
+                                          : { color: "#A1A1A1" }
+                                      }
+                                    />
+                                  </button>
+                                </div>
+                              </>
+                            ) : (
+                              row.max
+                            )}
+                          </td>
+                        </>
+                      )}
+
+                      <td className="border border-[#464646] px-2 py-1 text-center bg-transparent text-white">
                         {isEdit ? (
                           <input
-                            className="h-10 w-full focus:outline-none text-center"
+                            className="h-10 w-full focus:outline-none text-center bg-transparent text-white"
                             type="number"
                             min="1"
-                            value={row.min}
-                            onChange={(e) =>
-                              handleRowChange(i, "min", e.target.value)
-                            }
-                          />
-                        ) : (
-                          row.min
-                        )}
-                      </td>
-                      <td className="border px-2 py-1">
-                        {isEdit ? (
-                          <input
-                            className="h-10 w-full focus:outline-none text-center"
-                            type="number"
-                            min="1"
-                            value={row.max}
-                            onChange={(e) =>
-                              handleRowChange(i, "max", e.target.value)
-                            }
-                          />
-                        ) : (
-                          row.max
-                        )}
-                      </td>
-                      <td className="border px-2 py-1">
-                        {isEdit ? (
-                          <input
-                            className="h-10 w-full focus:outline-none text-center"
-                            type="number"
-                            min="1"
-                            value={row.amount}
+                            value={row.amount || ""}
                             onChange={(e) =>
                               handleRowChange(i, "amount", e.target.value)
                             }
@@ -450,24 +561,26 @@ function PackageTable({ data, setData }) {
                 </tbody>
               </table>
             </div>
-            <button
-              className="rounded-lg py-2 px-4 bg-black text-white text-sm"
-              onClick={handleAddNewRow}
-            >
-              Add row
-            </button>
+            {isEdit && (
+              <button
+                className="rounded-2xl py-3 px-4 bg-[#1E1E24] text-white text-[13px]"
+                onClick={handleAddNewRow}
+              >
+                Add row
+              </button>
+            )}
           </div>
           <div className="flex items-center justify-end gap-3">
             <button
               className="bg-black
-                px-6 py-2 rounded-xl text-white w-24"
+                px-6 py-2 rounded-xl text-white w-24 text-sm border border-[#DAFD24]"
               onClick={isEdit ? handleSave : handleEdit}
             >
               {isEdit ? "Save" : "Edit"}
             </button>
             <button
               className="bg-red-600
-                px-6 py-2 rounded-xl text-white w-24"
+                px-3 py-2 rounded-xl text-white w-24 text-sm"
             >
               Delete
             </button>

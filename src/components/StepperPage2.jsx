@@ -13,23 +13,20 @@ function StepperPage2({
   amountRemaining,
   packageRows,
   gameTypePrizepool,
+  setSelectedPrizepoolId,
 }) {
   const [selectedPrizepool, setSelectedPrizepool] = useState(null);
 
-  const [isOn, setIsOn] = useState(false);
-
-  const toggleSwitch = () => setIsOn((prev) => !prev);
-
   const handlePrizepool = (e) => {
     const prizepoolId = e.target.value;
-    console.log(prizepoolId);
-    console.log(packageRows);
+
+    console.log(gameTypePrizepool);
 
     const findPackage = packageRows.find(
       (each) => each.prizepool === prizepoolId
     );
 
-    console.log(findPackage);
+    setSelectedPrizepoolId(findPackage.prizepool);
 
     const { entryFee, players, prizepool } = findPackage;
 
@@ -46,19 +43,20 @@ function StepperPage2({
   };
 
   const handleAddNewRow = () => {
-    if (amountRemaining !== 0 || prizeData.length === 0) {
-      setPrizeData((prev) => [...prev, { min: "", max: "", amount: "" }]);
-
-      // setSelectedPrizepool((prev) => {
-      //   if (!prev) return null;
-      //   const updatedPrizepool = { ...prev };
-      //   updatedPrizepool.prizepool.prizeData = [
-      //     ...updatedPrizepool.prizepool.prizeData,
-      //     { min: "", max: "", amount: "" },
-      //   ];
-      //   return updatedPrizepool;
-      // });
+    if (amountRemaining !== 0) {
+      setPrizeData((prev) => [
+        ...prev,
+        { min: 0, max: 0, amount: 0, isMultiple: false },
+      ]);
     }
+  };
+
+  const toggleSwitch = (index) => {
+    setPrizeData((prev) => {
+      return prev.map((row, i) =>
+        i === index ? { ...row, isMultiple: !row.isMultiple } : row
+      );
+    });
   };
 
   return (
@@ -69,11 +67,9 @@ function StepperPage2({
             className="w-full h-full cursor-pointer bg-transparent text-[#ffffffb6] rounded-lg font-thin text-sm outline-none"
             onChange={handlePrizepool}
           >
-            <option value="" disabled>
-              Existing prizepools
-            </option>
+            <option defaultValue="">Existing prizepools</option>
             {gameTypePrizepool.map((each, i) => (
-              <option key={each.prizepool} value={each.prizepool}>{`Prizepool ${
+              <option key={i} value={each.prizepool}>{`Prizepool ${
                 i + 1
               }`}</option>
             ))}
@@ -117,9 +113,6 @@ function StepperPage2({
 
       <div className="flex justify-between mt-10 mb-3">
         <h5 className="font-semibold text-lg text-[#ffffff]">Prizepool</h5>
-        {interaction.errorText && (
-          <p className="text-red-500 text-sm">* {interaction.errorText}</p>
-        )}
       </div>
 
       <div className="border border-[#464646] rounded-2xl overflow-hidden">
@@ -154,37 +147,53 @@ function StepperPage2({
           <tbody>
             {prizeData.map((row, i) => (
               <tr key={i}>
-                {row.max === "0" ? (
+                {!row.isMultiple ? (
                   <td className="border border-[#464646] px-2 py-1" colSpan={2}>
-                    <div className="flex items-center justify-between">
+                    <div className="relative flex items-center justify-between">
                       <input
                         className="h-10 w-full focus:outline-none text-center bg-transparent text-white"
                         type="number"
                         min="1"
-                        value={row.min}
+                        value={row.max || ""}
+                        onChange={(e) =>
+                          handleRowChange(i, "max", e.target.value)
+                        }
                       />
-                      <div className="flex items-center gap-4">
+
+                      <div className="absolute right-1 flex items-center gap-4 mr-1">
                         <button
-                          onClick={toggleSwitch}
+                          onClick={() => toggleSwitch(i)}
                           className={`relative w-16 h-7 flex items-center justify-between rounded-full transition-colors duration-300 ${
-                            isOn ? "bg-[#1E1E24]" : "bg-[#1E1E24]"
+                            prizeData[i].isMultiple
+                              ? "bg-[#1E1E24]"
+                              : "bg-[#1E1E24]"
                           }`}
                         >
                           <div
-                            className={`flex items-center justify-center w-8 h-full rounded-full shadow-md transform duration-300 ${
-                              isOn
-                                ? "translate-x-8 bg-[#DAFD24]"
+                            className={`flex items-center justify-center w-[2.2rem] h-full rounded-full shadow-md transform duration-300 bg-[#DAFD24] z-10" ${
+                              prizeData[i].isMultiple
+                                ? "translate-x-8"
                                 : "translate-x-0"
                             }`}
                           ></div>
                           <User
                             size={18}
-                            className={`absolute left-2`}
+                            className={`absolute left-[9px]`}
                             style={
-                              isOn ? { color: "black" } : { color: "A1A1A1" }
+                              prizeData[i].isMultiple
+                                ? { color: "#A1A1A1" }
+                                : { color: "black" }
                             }
                           />
-                          <Users size={18} className="absolute right-1" />
+                          <Users
+                            size={18}
+                            className="absolute right-1"
+                            style={
+                              prizeData[i].isMultiple
+                                ? { color: "black" }
+                                : { color: "#A1A1A1" }
+                            }
+                          />
                         </button>
                       </div>
                     </div>
@@ -196,22 +205,59 @@ function StepperPage2({
                         className="h-10 w-full focus:outline-none text-center text-white bg-transparent"
                         type="number"
                         min="1"
-                        value={row.min}
+                        value={row.min || ""}
                         onChange={(e) =>
                           handleRowChange(i, "min", e.target.value)
                         }
                       />
                     </td>
-                    <td className="border border-[#464646] px-2 py-1">
+                    <td className="relative border border-[#464646] px-2 py-1 flex items-center justify-between">
                       <input
                         className="h-10 w-full focus:outline-none text-center text-white bg-transparent"
                         type="number"
                         min="1"
-                        value={row.max}
+                        value={row.max || ""}
                         onChange={(e) =>
                           handleRowChange(i, "max", e.target.value)
                         }
                       />
+
+                      <div className="absolute right-1 flex items-center gap-4 mr-1">
+                        <button
+                          onClick={() => toggleSwitch(i)}
+                          className={`relative w-16 h-7 flex items-center justify-between rounded-full transition-colors duration-300 ${
+                            prizeData[i].isMultiple
+                              ? "bg-[#1E1E24]"
+                              : "bg-[#1E1E24]"
+                          }`}
+                        >
+                          <div
+                            className={`flex items-center justify-center w-[2.2rem] h-full rounded-full shadow-md transform duration-300 bg-[#DAFD24] z-10" ${
+                              prizeData[i].isMultiple
+                                ? "translate-x-8"
+                                : "translate-x-0"
+                            }`}
+                          ></div>
+                          <User
+                            size={18}
+                            className={`absolute left-[9px]`}
+                            style={
+                              prizeData[i].isMultiple
+                                ? { color: "#A1A1A1" }
+                                : { color: "black" }
+                            }
+                          />
+                          <Users
+                            size={18}
+                            className="absolute right-1"
+                            style={
+                              prizeData[i].isMultiple
+                                ? { color: "black" }
+                                : { color: "#A1A1A1" }
+                            }
+                          />
+                        </button>
+                      </div>
                     </td>
                   </>
                 )}
@@ -220,7 +266,7 @@ function StepperPage2({
                     className="h-10 w-full focus:outline-none text-center bg-transparent text-white"
                     type="number"
                     min="1"
-                    value={row.amount}
+                    value={row.amount || ""}
                     onChange={(e) =>
                       handleRowChange(i, "amount", e.target.value)
                     }
@@ -233,12 +279,12 @@ function StepperPage2({
       </div>
       <div className="flex justify-between my-3">
         <button
-          className="rounded-2xl py-3 px-5 bg-[#1E1E24] text-white text-[14px]"
+          className="rounded-2xl py-3 px-4 bg-[#1E1E24] text-white text-[13px]"
           onClick={handleAddNewRow}
         >
           Add row
         </button>
-        <div className="flex gap-5 text-white">
+        <div className="flex gap-5 text-sm text-white">
           <p>
             Total: <span>{totalAmount}</span>
           </p>
@@ -252,3 +298,13 @@ function StepperPage2({
 }
 
 export default StepperPage2;
+
+// setSelectedPrizepool((prev) => {
+//   if (!prev) return null;
+//   const updatedPrizepool = { ...prev };
+//   updatedPrizepool.prizepool.prizeData = [
+//     ...updatedPrizepool.prizepool.prizeData,
+//     { min: "", max: "", amount: "" },
+//   ];
+//   return updatedPrizepool;
+// });

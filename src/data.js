@@ -60,41 +60,41 @@ export const dummyPrizepools = [
   {
     id: "prizepool_1",
     prizeData: [
-      { min: 1, max: 1, amount: 70 },
-      { min: 2, max: 2, amount: 30 },
+      { min: 1, max: 1, amount: 70, isMultiple: true },
+      { min: 2, max: 2, amount: 30, isMultiple: true },
     ],
   },
   {
     id: "prizepool_2",
     prizeData: [
-      { min: 1, max: 1, amount: 250 },
-      { min: 2, max: 3, amount: 100 },
-      { min: 4, max: 4, amount: 50 },
+      { min: 1, max: 1, amount: 250, isMultiple: true },
+      { min: 2, max: 3, amount: 100, isMultiple: true },
+      { min: 4, max: 4, amount: 50, isMultiple: true },
     ],
   },
   {
     id: "prizepool_3",
     prizeData: [
-      { min: 1, max: 1, amount: 400 },
-      { min: 2, max: 3, amount: 200 },
-      { min: 4, max: 6, amount: 120 },
+      { min: 1, max: 1, amount: 400, isMultiple: true },
+      { min: 2, max: 3, amount: 200, isMultiple: true },
+      { min: 4, max: 6, amount: 120, isMultiple: true },
     ],
   },
   {
     id: "prizepool_4",
     prizeData: [
-      { min: 1, max: 1, amount: 400 },
-      { min: 2, max: 3, amount: 150 },
-      { min: 4, max: 5, amount: 50 },
+      { min: 1, max: 1, amount: 400, isMultiple: true },
+      { min: 2, max: 3, amount: 150, isMultiple: true },
+      { min: 4, max: 5, amount: 50, isMultiple: true },
     ],
   },
   {
     id: "prizepool_5",
     prizeData: [
-      { min: 1, max: 1, amount: 900 },
-      { min: 2, max: 2, amount: 400 },
-      { min: 3, max: 4, amount: 300 },
-      { min: 5, max: 8, amount: 300 },
+      { min: 1, max: 1, amount: 900, isMultiple: true },
+      { min: 2, max: 2, amount: 400, isMultiple: true },
+      { min: 3, max: 4, amount: 300, isMultiple: true },
+      { min: 5, max: 8, amount: 300, isMultiple: true },
     ],
   },
 ];

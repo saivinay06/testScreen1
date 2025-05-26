@@ -4,9 +4,11 @@ import GamePackage from "./components/GamePackage";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/package" element={<GamePackage />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/package" element={<GamePackage />} />
+      </Routes>
+    </>
   );
 }
 

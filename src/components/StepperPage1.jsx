@@ -8,16 +8,14 @@ function StepperPage1({
 }) {
   return (
     <div className="flex flex-col justify-between gap-16">
-      <div className="flex justify-between">
-        <div className="flex justify-center items-center w-60 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
+      <div className="flex justify-between gap-3">
+        <div className="flex justify-center items-center w-52 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
           {/* <p className="font-medium">Game type :</p> */}
           <select
             onChange={handleGameChange}
             className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-thin text-sm outline-none"
           >
-            <option value="" disabled>
-              Game type
-            </option>
+            <option defaultValue="">Game type</option>
             {gameConfig.map((obj, i) => (
               <option key={i} value={obj.name}>
                 {obj.name}
@@ -26,7 +24,7 @@ function StepperPage1({
           </select>
         </div>
         <div className="flex gap-5 items-center h-15">
-          <div className="flex justify-center items-center w-60 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
+          <div className="flex justify-center items-center w-48 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
             {/* <p className="font-medium">Game mode :</p> */}
             <select
               className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-thin text-sm outline-none"
@@ -34,9 +32,7 @@ function StepperPage1({
                 setInteraction((prev) => ({ ...prev, mode: e.target.value }))
               }
             >
-              <option value="" disabled>
-                Game mode
-              </option>
+              <option defaultValue="">Game mode</option>
               {interaction.currGame &&
                 interaction.currGame.modes.map((each, i) => (
                   <option key={i} value={each}>
@@ -45,7 +41,7 @@ function StepperPage1({
                 ))}
             </select>
           </div>
-          <div className="flex justify-center items-center w-60 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
+          <div className="flex justify-center items-center w-48 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
             {/* <p className="font-medium">Tier :</p> */}
             <select
               className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-thin text-sm outline-none"
@@ -53,9 +49,7 @@ function StepperPage1({
                 setInteraction((prev) => ({ ...prev, tier: e.target.value }))
               }
             >
-              <option value="" disabled>
-                Tier
-              </option>
+              <option defaultValue="">Tier</option>
               {interaction.currGame &&
                 interaction.currGame.tiers.map((each, i) => (
                   <option key={i} value={each}>
