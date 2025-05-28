@@ -5,6 +5,7 @@ export default {
     extend: {
       fontFamily: {
         helveticaBold: ['"Helvetica Neue LT Std Bold Extended"', "sans-serif"],
+        poppins: ["Poppins", "sans-serif"],
       },
     },
   },

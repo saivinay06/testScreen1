@@ -64,7 +64,7 @@ function StepperPage2({
       <div className="flex justify-between items-center">
         <div className="flex justify-center items-center w-50 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
           <select
-            className="w-full h-full cursor-pointer bg-transparent text-[#ffffffb6] rounded-lg font-thin text-sm outline-none"
+            className="w-full h-full cursor-pointer bg-transparent text-[#464646] font-bold rounded-lg text-sm outline-none"
             onChange={handlePrizepool}
           >
             <option defaultValue="">Existing prizepools</option>
@@ -79,7 +79,7 @@ function StepperPage2({
         <div className="flex items-center gap-5">
           <div className="flex justify-center items-center w-50 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
             <select
-              className="w-full h-full cursor-pointer bg-transparent text-[#ffffffb6] rounded-lg font-thin text-sm outline-none"
+              className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-bold text-sm outline-none"
               value={interaction.playersCount}
               onChange={(e) =>
                 setInteraction((prev) => ({
@@ -103,7 +103,7 @@ function StepperPage2({
               placeholder="Entry fee"
               type="number"
               min="0"
-              className="w-full h-full cursor-pointer bg-transparent text-[#ffffffb6] rounded-lg font-thin text-sm outline-none"
+              className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-bold text-sm outline-none"
               onChange={handleEntryFee}
               defaultValue={selectedPrizepool && selectedPrizepool.entryFee}
             />
@@ -115,9 +115,9 @@ function StepperPage2({
         <h5 className="font-semibold text-lg text-[#ffffff]">Prizepool</h5>
       </div>
 
-      <div className="border border-[#464646] rounded-2xl overflow-hidden">
+      <div className="border border-[#464646] rounded-2xl custom-scrollbar overflow-x-hidden overflow-y-scroll max-h-56 ">
         <table
-          className="table-auto border-none w-full"
+          className="table-auto border-none min-w-[500px] w-full"
           style={{ tableLayout: "fixed" }}
         >
           <thead>
@@ -148,7 +148,7 @@ function StepperPage2({
             {prizeData.map((row, i) => (
               <tr key={i}>
                 {!row.isMultiple ? (
-                  <td className="border border-[#464646] px-2 py-1" colSpan={2}>
+                  <td className="border border-[#464646] px-2 py-3" colSpan={2}>
                     <div className="relative flex items-center justify-between">
                       <input
                         className="h-10 w-full focus:outline-none text-center bg-transparent text-white"
@@ -200,7 +200,7 @@ function StepperPage2({
                   </td>
                 ) : (
                   <>
-                    <td className="border border-[#464646] px-2 py-1">
+                    <td className="border border-[#464646] px-2 py-3">
                       <input
                         className="h-10 w-full focus:outline-none text-center text-white bg-transparent"
                         type="number"
@@ -211,7 +211,7 @@ function StepperPage2({
                         }
                       />
                     </td>
-                    <td className="relative border border-[#464646] px-2 py-1 flex items-center justify-between">
+                    <td className="relative border border-[#464646] px-2 py-3 flex items-center justify-between">
                       <input
                         className="h-10 w-full focus:outline-none text-center text-white bg-transparent"
                         type="number"
@@ -277,7 +277,7 @@ function StepperPage2({
           </tbody>
         </table>
       </div>
-      <div className="flex justify-between my-3">
+      <div className="flex justify-between mt-3">
         <button
           className="rounded-2xl py-3 px-4 bg-[#1E1E24] text-white text-[13px]"
           onClick={handleAddNewRow}

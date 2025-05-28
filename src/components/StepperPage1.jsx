@@ -13,7 +13,7 @@ function StepperPage1({
           {/* <p className="font-medium">Game type :</p> */}
           <select
             onChange={handleGameChange}
-            className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-thin text-sm outline-none"
+            className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-bold text-sm outline-none"
           >
             <option defaultValue="">Game type</option>
             {gameConfig.map((obj, i) => (
@@ -27,7 +27,7 @@ function StepperPage1({
           <div className="flex justify-center items-center w-48 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
             {/* <p className="font-medium">Game mode :</p> */}
             <select
-              className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-thin text-sm outline-none"
+              className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-bold text-sm outline-none"
               onChange={(e) =>
                 setInteraction((prev) => ({ ...prev, mode: e.target.value }))
               }
@@ -44,7 +44,7 @@ function StepperPage1({
           <div className="flex justify-center items-center w-48 border border-[#464646] px-3 bg-[#0F0F13] h-14 rounded-2xl">
             {/* <p className="font-medium">Tier :</p> */}
             <select
-              className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-thin text-sm outline-none"
+              className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-bold text-sm outline-none"
               onChange={(e) =>
                 setInteraction((prev) => ({ ...prev, tier: e.target.value }))
               }
@@ -66,7 +66,7 @@ function StepperPage1({
             type="number"
             placeholder="Min wait time (seconds)"
             name="minWaitTime"
-            className="w-full h-full bg-transparent text-[#ffffff] rounded-lg font-thin text-sm focus:outline-none"
+            className="w-full h-full bg-transparent text-[#ffffff] rounded-lg font-bold text-sm focus:outline-none"
             onChange={(e) =>
               setInteraction((prev) => ({
                 ...prev,
@@ -80,7 +80,7 @@ function StepperPage1({
             type="number"
             placeholder="Max wait time (seconds)"
             name="maxWaitTime"
-            className="w-full h-full bg-transparent text-white rounded-lg font-thin text-sm focus:outline-none"
+            className="w-full h-full bg-transparent text-white rounded-lg font-bold text-sm focus:outline-none"
             onChange={(e) =>
               setInteraction((prev) => ({
                 ...prev,

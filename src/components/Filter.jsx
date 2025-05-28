@@ -3,106 +3,102 @@ import { gameConfig } from "../data";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 
-function Filter({ active }) {
-  const dialogRef = useRef(null);
-  const [currGame, setCurrGame] = useState();
-  const [range, setRange] = useState([0, 150]);
-
-  const [selectedGameTypes, setSelectedGameTypes] = useState([]);
-
-  const handleType = (e) => {
-    const { value, checked } = e.target;
-    setSelectedGameTypes((prev) =>
-      checked ? [...prev, value] : prev.filter((item) => item !== value)
-    );
-  };
-
-  useEffect(() => {
-    if (active) {
-      dialogRef.current?.showModal();
-    } else {
-      dialogRef.current?.close();
-    }
-  }, [active]);
-
-  const selectedGames = gameConfig.filter((game) =>
-    selectedGameTypes.includes(game.name)
-  );
-
-  const allModes = selectedGames
-    .flatMap((game) => game.modes)
-    .filter((mode, index, self) => self.indexOf(mode) === index);
-
-  const allTiers = selectedGames
-    .flatMap((game) => game.tiers)
-    .filter((tier, index, self) => self.indexOf(tier) === index);
-
-  console.log(range);
-
+function Filter({
+  setShowBubble,
+  handleFilterClick,
+  activeFilter,
+  filterType,
+  handleCheckbox,
+  selectedFilterBoxes,
+  currActiveGame,
+  packageKey,
+}) {
   return (
-    <dialog
-      ref={dialogRef}
-      className="p-5 max-h-[50%] rounded-xl shadow-xl w-[30%]"
+    <div
+      className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-10"
+      onMouseLeave={() => setShowBubble(false)}
     >
-      <div className="mb-5">
-        <p>
-          <strong>Game type</strong>
-        </p>
-        {gameConfig.map((each, i) => (
-          <div key={i} className="flex gap-3 items-center">
-            <input
-              id={each.name}
-              type="checkbox"
-              name="gameType"
-              value={each.name}
-              onChange={handleType}
-              checked={selectedGameTypes.includes(each.name)}
-            />
-            <label htmlFor={each.name}>{each.name}</label>
-          </div>
-        ))}
-      </div>
-      <div className="mb-5">
-        <p>
-          <strong>Game mode</strong>
-        </p>
-        {allModes?.map((each, i) => (
-          <div key={i} className="flex gap-3 items-center">
-            <input id={each} type="checkbox" name="gameMode" value={each} />
-            <label htmlFor={each}>{each}</label>
-          </div>
-        ))}
-      </div>
-      <div className="mb-5">
-        <p>
-          <strong>Tier</strong>
-        </p>
-        {allTiers?.map((each, i) => (
-          <div key={i} className="flex gap-3 items-center">
-            <input id={each} type="checkbox" name="gameTier" value={each} />
-            <label htmlFor={each}>{each}</label>
-          </div>
-        ))}
-      </div>
-      <div>
-        <p>
-          <strong>Entry fee</strong>
-        </p>
-        <div className="w-80 p-5">
-          <Slider
-            range
-            min={0}
-            max={100}
-            defaultValue={range}
-            onChange={setRange}
-          />
-          <div className="flex justify-between mt-2">
-            <span>{range[0]}</span>
-            <span>{range[1]}</span>
-          </div>
+      <div className="w-0 h-0 mx-auto border-l-8 border-r-8 border-b-8 border-transparent border-b-[#39393c]"></div>
+
+      <div className="bg-[#1C1C1C] rounded-lg shadow-md text-sm w-72 flex justify-between relative">
+        <div className="flex flex-col justify-between w-[50%] bg-[#292929] rounded-md text-sm">
+          <button
+            className={`w-full py-4 px-4 text-left transition-all ease duration-200  ${
+              activeFilter === "gameType" ? "bg-[#1E1E24] font-semibold" : ""
+            } `}
+            onClick={() => handleFilterClick("name", "gameType")}
+          >
+            Game type
+          </button>
+          <button
+            className={`w-full py-4 px-4 text-left transition-all ease duration-200  rounded-md ${
+              activeFilter === "gameMode" ? "bg-[#1E1E24] font-semibold" : ""
+            } `}
+            onClick={() => handleFilterClick("modes", "gameMode")}
+          >
+            Game mode
+          </button>
+          <button
+            className={`w-full py-4 px-4 text-left transition-all ease duration-200  rounded-md ${
+              activeFilter === "tier" ? "bg-[#1E1E24] font-semibold" : ""
+            } `}
+            onClick={() => handleFilterClick("tiers", "tier")}
+          >
+            Tier
+          </button>
+          <button
+            className={`w-full py-4 px-4 text-left transition-all ease duration-200  rounded-md ${
+              activeFilter === "players" ? "bg-[#1E1E24] font-semibold" : ""
+            } `}
+            onClick={() => handleFilterClick("playerCount", "players")}
+          >
+            Player count
+          </button>
+        </div>
+        {/* <div className="w-px h-40 bg-black" /> */}
+        <div className="w-[50%] p-5 flex flex-col gap-3">
+          {filterType &&
+            filterType.map((each) => (
+              <div className="flex items-center gap-2 custom-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selectedFilterBoxes.includes(each)}
+                  onChange={(e) => handleCheckbox(each, e)}
+                  value={each}
+                  disabled={
+                    currActiveGame.length > 0 &&
+                    packageKey &&
+                    packageKey !== "name" &&
+                    !currActiveGame.some((game) =>
+                      game[packageKey].includes(each)
+                    )
+                  }
+                  id={each}
+                />
+                <label
+                  htmlFor={each}
+                  className={`${
+                    currActiveGame.length > 0 &&
+                    packageKey &&
+                    packageKey !== "name" &&
+                    !currActiveGame.some((game) =>
+                      game[packageKey].includes(each)
+                    )
+                      ? "opacity-50"
+                      : ""
+                  }`}
+                  style={{
+                    fontWeight: "lighter",
+                    fontSize: "14px",
+                  }}
+                >
+                  {each}
+                </label>
+              </div>
+            ))}
         </div>
       </div>
-    </dialog>
+    </div>
   );
 }
 

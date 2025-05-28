@@ -12,21 +12,29 @@ function PackageTable({ data, setData, setPrizeData }) {
   const [errorText, setErrorText] = useState("");
   const [amountRemaining, setAmountRemaining] = useState();
   const [totalAmount, setTotalAmount] = useState();
+  const [isPackageDelete, setIsPackageDelete] = useState(false);
+  const [currentPackageId, setCurrentPackageId] = useState(null);
   const dialogRef = useRef(null);
+  const confirmationRef = useRef(null);
+
+  useEffect(() => {
+    if (currentClicked && dialogRef.current) {
+      dialogRef.current.showModal();
+    }
+  }, [currentClicked]);
 
   const handleRowClick = (id) => {
-    setCurrentClicked(null);
     const resultObj = data.find((each) => each.id === id);
-    console.log(resultObj);
 
     const getTableData = dummyPrizepools.find(
       (each) => each.id === resultObj.prizepool
     );
-    console.log(getTableData);
+
     const currentGame = gameConfig.find(
       (each) => each.name === resultObj.gameType
     );
 
+    setCurrentPackageId(id);
     setCurrGame(currentGame);
     setTableData(getTableData.prizeData);
     setCurrentClicked(resultObj);
@@ -140,16 +148,23 @@ function PackageTable({ data, setData, setPrizeData }) {
   const handleAddNewRow = () => {
     if (amountRemaining > 0) {
       setTableData((prev) => [...prev, { min: "", max: "", amount: "" }]);
+    }
+  };
 
-      // setSelectedPrizepool((prev) => {
-      //   if (!prev) return null;
-      //   const updatedPrizepool = { ...prev };
-      //   updatedPrizepool.prizepool.prizeData = [
-      //     ...updatedPrizepool.prizepool.prizeData,
-      //     { min: "", max: "", amount: "" },
-      //   ];
-      //   return updatedPrizepool;
-      // });
+  const handleDeletePackage = () => {
+    confirmationRef.current.showModal();
+  };
+
+  const confirmationDelete = (val) => {
+    if (val === "Yes") {
+      setData((prev) => prev.filter((each) => each.id !== currentClicked.id));
+      setCurrentClicked(null);
+      setEditedData(null);
+      setIsEdit(false);
+      dialogRef.current?.close();
+      confirmationRef.current.close();
+    } else {
+      confirmationRef.current.close();
     }
   };
 
@@ -159,6 +174,14 @@ function PackageTable({ data, setData, setPrizeData }) {
         i === index ? { ...row, isMultiple: !row.isMultiple } : row
       );
     });
+
+    const resultObj = data.find((each) => each.id === currentPackageId);
+
+    const getTableData = dummyPrizepools.find(
+      (each) => each.id === resultObj.prizepool
+    );
+
+    setTableData(getTableData.prizeData);
   };
 
   return (
@@ -166,7 +189,7 @@ function PackageTable({ data, setData, setPrizeData }) {
       <table className="table-auto w-full">
         <thead className="text-[#A9A9B7] text-[16px]">
           <tr>
-            <th className="text-start pb-8">S.no</th>
+            <th className="text-start pb-8">Package_id</th>
             <th className="text-start pb-8">Game Type</th>
             <th className="text-start pb-8">Game Mode</th>
             <th className="text-start pb-8">Tier</th>
@@ -178,7 +201,7 @@ function PackageTable({ data, setData, setPrizeData }) {
             <tr
               key={each.id}
               onClick={() => handleRowClick(each.id)}
-              className="hover:bg-slate-200 cursor-pointer text-center border-b border-b-gray-300/10 text-sm"
+              className="hover:bg-[#1E1E24] cursor-pointer text-center border-b border-b-gray-300/10 text-sm"
             >
               <td className="text-start pb-5">{each.id}</td>
               <td className="text-start text-[#A9A9B7] pb-5">
@@ -211,6 +234,7 @@ function PackageTable({ data, setData, setPrizeData }) {
             <div className="">
               {isEdit ? (
                 <div className="mb-3">
+                  <p className="text-white text-sm">Game mode</p>
                   <select
                     className="w-72 border border-stone-600 p-2 rounded-lg"
                     defaultValue={currentClicked.gameMode}
@@ -239,6 +263,7 @@ function PackageTable({ data, setData, setPrizeData }) {
               {isEdit ? (
                 <div className="mb-3">
                   {/* <p className="font-medium">Tier :</p> */}
+                  <p className="text-white text-sm">Tier</p>
                   <select
                     className="w-72 border border-stone-600 p-2 rounded-lg"
                     defaultValue={currentClicked.tier}
@@ -273,57 +298,63 @@ function PackageTable({ data, setData, setPrizeData }) {
             </div>
             <div className="flex flex-col">
               {isEdit ? (
-                <input
-                  type="number"
-                  placeholder="Min wait time (seconds)"
-                  name="minWaitTime"
-                  className="ml-2 w-72 p-2 pl-1 border border-stone-500 rounded-md focus:outline-none mb-3"
-                  defaultValue={currentClicked.minQue}
-                  onChange={(e) =>
-                    setEditedData((prev) => ({
-                      ...prev,
-                      minQue: e.target.value,
-                    }))
-                  }
-                  // onChange={(e) =>
-                  //   setInteraction((prev) => ({
-                  //     ...prev,
-                  //     minWaitTime: e.target.value,
-                  //   }))
-                  // }
-                />
+                <>
+                  <p className="text-white text-sm">Minimum wait time</p>
+                  <input
+                    type="number"
+                    placeholder="Min wait time (seconds)"
+                    name="minWaitTime"
+                    className="ml-2 w-72 p-2 pl-1 border border-stone-500 rounded-md focus:outline-none mb-3"
+                    defaultValue={currentClicked.minQue}
+                    onChange={(e) =>
+                      setEditedData((prev) => ({
+                        ...prev,
+                        minQue: e.target.value,
+                      }))
+                    }
+                    // onChange={(e) =>
+                    //   setInteraction((prev) => ({
+                    //     ...prev,
+                    //     minWaitTime: e.target.value,
+                    //   }))
+                    // }
+                  />
+                </>
               ) : (
                 <p className="mb-3 text-[#ffffffb6] text-sm">
                   <strong className="text-white text-base">
-                    Minimum wait time:{" "}
+                    Minimum wait time(Sec):{" "}
                   </strong>
                   {currentClicked.minQue}
                 </p>
               )}
               {isEdit ? (
-                <input
-                  type="number"
-                  placeholder="Max wait time (seconds)"
-                  name="maxWaitTime"
-                  className="ml-2 w-72 p-2 pl-1 border border-stone-500 rounded-md focus:outline-none"
-                  defaultValue={currentClicked.maxQue}
-                  onChange={(e) =>
-                    setEditedData((prev) => ({
-                      ...prev,
-                      maxQue: e.target.value,
-                    }))
-                  }
-                  // onChange={(e) =>
-                  //   setInteraction((prev) => ({
-                  //     ...prev,
-                  //     maxWaitTime: e.target.value,
-                  //   }))
-                  // }
-                />
+                <>
+                  <p className="text-white text-sm">Maximum wait time</p>
+                  <input
+                    type="number"
+                    placeholder="Max wait time (seconds)"
+                    name="maxWaitTime"
+                    className="ml-2 w-72 p-2 pl-1 border border-stone-500 rounded-md focus:outline-none"
+                    defaultValue={currentClicked.maxQue}
+                    onChange={(e) =>
+                      setEditedData((prev) => ({
+                        ...prev,
+                        maxQue: e.target.value,
+                      }))
+                    }
+                    // onChange={(e) =>
+                    //   setInteraction((prev) => ({
+                    //     ...prev,
+                    //     maxWaitTime: e.target.value,
+                    //   }))
+                    // }
+                  />
+                </>
               ) : (
                 <p className="mb-3 text-[#ffffffb6] text-sm">
                   <strong className="text-white text-base">
-                    Maximum wait time:{" "}
+                    Maximum wait time(Sec):{" "}
                   </strong>
                   {currentClicked.maxQue}
                 </p>
@@ -385,7 +416,7 @@ function PackageTable({ data, setData, setPrizeData }) {
               )}
             </div>
 
-            <div className="border border-[#464646] rounded-2xl overflow-hidden my-5">
+            <div className="border border-[#464646] rounded-2xl overflow-x-hidden overflow-y-scroll my-5 custom-scrollbar h-52">
               <table
                 className="table-auto w-full"
                 style={{ tableLayout: "fixed" }}
@@ -408,7 +439,7 @@ function PackageTable({ data, setData, setPrizeData }) {
                     <tr key={i}>
                       {!row.isMultiple ? (
                         <td
-                          className={`border border-[#464646] px-2 py-1 text-white`}
+                          className={`border border-[#464646] px-2 py-1 text-white text-center`}
                           colSpan={2}
                         >
                           {isEdit ? (
@@ -573,12 +604,13 @@ function PackageTable({ data, setData, setPrizeData }) {
           <div className="flex items-center justify-end gap-3">
             <button
               className="bg-black
-                px-6 py-2 rounded-xl text-white w-24 text-sm border border-[#DAFD24]"
+                px-6 py-2 rounded-xl text-white w-24 text-sm border border-[#ffffff]"
               onClick={isEdit ? handleSave : handleEdit}
             >
               {isEdit ? "Save" : "Edit"}
             </button>
             <button
+              onClick={handleDeletePackage}
               className="bg-red-600
                 px-3 py-2 rounded-xl text-white w-24 text-sm"
             >
@@ -587,6 +619,25 @@ function PackageTable({ data, setData, setPrizeData }) {
           </div>
         </dialog>
       )}
+      <dialog ref={confirmationRef} className="p-5 rounded-xl relative">
+        <div className="flex flex-col gap-5">
+          <p>Are you sure you want to delete the package?</p>
+          <div className="flex items-center gap-5 justify-end">
+            <button
+              onClick={() => confirmationDelete("Yes")}
+              className="border border-black px-4 py-1 rounded-xl"
+            >
+              Yes
+            </button>
+            <button
+              onClick={() => confirmationDelete("No")}
+              className="border border-black px-4 py-1 rounded-xl"
+            >
+              No
+            </button>
+          </div>
+        </div>
+      </dialog>
     </>
   );
 }

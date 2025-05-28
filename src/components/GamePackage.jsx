@@ -337,18 +337,13 @@ function GamePackage() {
   };
 
   return (
-    <div className="font-helveticaBold relative h-screen w-full bg-[#0F0F13] text-[#FFFFFF]">
+    <div className="font-poppins relative h-screen w-full bg-[#0F0F13] text-[#FFFFFF]">
       <div className="border-b border-b-gray-300/10 py-6 px-10">
-        <h1 className="text-3xl font-semibold">Current Packages</h1>
-        <div className="flex items-center gap-5 justify-end">
-          {/* <div
-            onClick={handleFilterClick}
-            className="inline-flex items-center gap-1 rounded-lg cursor-pointer"
-          >
-            <FilterIcon size={20} />
-            <p>Filter</p>
-          </div> */}
-          <div className="relative text-sm font-light flex items-center gap-5">
+        <h1 className="text-3xl font-semibold font-helveticaBold ">
+          Current Packages
+        </h1>
+        <div className="flex items-center gap-5 justify-end mr-20">
+          <div className="text-sm font-light flex items-center gap-5">
             <div
               className="inline-flex items-center bg-[#1E1E24] py-2 px-3 rounded-2xl gap-2 cursor-pointer"
               onClick={handleAdd}
@@ -358,95 +353,24 @@ function GamePackage() {
             </div>
             <div
               onMouseEnter={() => setShowBubble(true)}
-              className="inline-flex items-center bg-[#1E1E24] py-2 px-3 rounded-2xl gap-2 cursor-pointer"
+              className="relative inline-flex items-center bg-[#1E1E24] py-2 px-3 rounded-2xl gap-2 cursor-pointer"
             >
               <FilterIcon size={15} />
               <p>Filter</p>
-            </div>
-
-            {showBubble && (
-              <>
-                <div
-                  className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-10"
-                  onMouseLeave={() => setShowBubble(false)}
-                >
-                  <div className="w-0 h-0 mx-auto border-l-8 border-r-8 border-b-8 border-transparent border-b-white"></div>
-
-                  <div className="bg-white rounded-lg shadow-md text-sm w-72 flex justify-between relative">
-                    <div className="flex flex-col justify-between w-[50%] bg-slate-50 rounded-md">
-                      <button
-                        className={`w-full py-4 px-4 text-left transition-all ease duration-200 hover:bg-slate-100 rounded-md ${
-                          activeFilter === "gameType" ? "bg-slate-200" : ""
-                        } `}
-                        onClick={() => handleFilterClick("name", "gameType")}
-                      >
-                        Game type
-                      </button>
-                      <button
-                        className={`w-full py-4 px-4 text-left transition-all ease duration-200 hover:bg-slate-100 rounded-md ${
-                          activeFilter === "gameMode" ? "bg-slate-200" : ""
-                        } `}
-                        onClick={() => handleFilterClick("modes", "gameMode")}
-                      >
-                        Game mode
-                      </button>
-                      <button
-                        className={`w-full py-4 px-4 text-left transition-all ease duration-200 hover:bg-slate-100 rounded-md ${
-                          activeFilter === "tier" ? "bg-slate-200" : ""
-                        } `}
-                        onClick={() => handleFilterClick("tiers", "tier")}
-                      >
-                        Tier
-                      </button>
-                      <button
-                        className="w-full py-4 px-4 text-left transition-all ease duration-200 hover:bg-slate-100 rounded-md"
-                        // onClick={() => handleFilterClick("modes")}
-                      >
-                        Entry fee
-                      </button>
-                      <button
-                        className={`w-full py-4 px-4 text-left transition-all ease duration-200 hover:bg-slate-100 rounded-md ${
-                          activeFilter === "players" ? "bg-slate-200" : ""
-                        } `}
-                        onClick={() =>
-                          handleFilterClick("playerCount", "players")
-                        }
-                      >
-                        Player count
-                      </button>
-                    </div>
-                    {/* <div className="w-px h-40 bg-black" /> */}
-                    <div className="w-[50%] p-5">
-                      {filterType &&
-                        filterType.map((each) => (
-                          <div className="flex items-center gap-3 mb-3">
-                            <input
-                              type="checkbox"
-                              className="border border-black"
-                              checked={selectedFilterBoxes.includes(each)}
-                              onChange={(e) => handleCheckbox(each, e)}
-                              value={each}
-                              disabled={
-                                currActiveGame.length > 0 &&
-                                packageKey &&
-                                packageKey !== "name" &&
-                                !currActiveGame.some((game) =>
-                                  game[packageKey].includes(each)
-                                )
-                              }
-                              id={each}
-                            />
-                            <label htmlFor={each}>{each}</label>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-            <div className="inline-flex items-center bg-[#1E1E24] py-2 px-3 rounded-2xl gap-2 cursor-pointer">
-              <ArrowDownUp size={15} />
-              <p>Sort</p>
+              {showBubble && (
+                <>
+                  <Filter
+                    activeFilter={activeFilter}
+                    setShowBubble={setShowBubble}
+                    handleFilterClick={handleFilterClick}
+                    filterType={filterType}
+                    selectedFilterBoxes={selectedFilterBoxes}
+                    handleCheckbox={handleCheckbox}
+                    currActiveGame={currActiveGame}
+                    packageKey={packageKey}
+                  />
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -455,7 +379,7 @@ function GamePackage() {
       <div className="px-10 py-6">
         <PackageTable
           data={filterType ? updatedPackage : packageRows}
-          setData={setPackageRows}
+          setData={filterType ? setUpdatedPackage : setPackageRows}
           setPrizeData={setPrizeData}
         />
       </div>
@@ -475,12 +399,12 @@ function GamePackage() {
               <Stepper active={currActiveTab} arr={stepperArr} />
             </div>
 
-            <div className="my-20 h-full w-[90%] m-auto">
+            <div className="my-10 h-full w-[90%] m-auto">
               {displayFields(currActiveTab)}
             </div>
           </div>
 
-          <div className="flex justify-end m-auto gap-4 w-[90%] mb-4">
+          <div className="flex justify-end m-auto gap-4 w-[90%] mb-2">
             {/* <button 10="border border-stone-500 px-6 py-2 rounded-xl w-24">
                 Cancel
               </button> */}
