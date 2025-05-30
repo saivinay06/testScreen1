@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 function StepperPage1({
   handleGameChange,
@@ -14,8 +14,9 @@ function StepperPage1({
           <select
             onChange={handleGameChange}
             className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-bold text-sm outline-none"
+            value={interaction.currGame?.name || ""}
           >
-            <option defaultValue="">Game type</option>
+            <option value="">Game type</option>
             {gameConfig.map((obj, i) => (
               <option key={i} value={obj.name}>
                 {obj.name}
@@ -31,8 +32,9 @@ function StepperPage1({
               onChange={(e) =>
                 setInteraction((prev) => ({ ...prev, mode: e.target.value }))
               }
+              value={interaction.mode || ""}
             >
-              <option defaultValue="">Game mode</option>
+              <option value="">Game mode</option>
               {interaction.currGame &&
                 interaction.currGame.modes.map((each, i) => (
                   <option key={i} value={each}>
@@ -48,8 +50,9 @@ function StepperPage1({
               onChange={(e) =>
                 setInteraction((prev) => ({ ...prev, tier: e.target.value }))
               }
+              value={interaction.tier || ""}
             >
-              <option defaultValue="">Tier</option>
+              <option value="">Tier</option>
               {interaction.currGame &&
                 interaction.currGame.tiers.map((each, i) => (
                   <option key={i} value={each}>
@@ -73,6 +76,7 @@ function StepperPage1({
                 minWaitTime: e.target.value,
               }))
             }
+            value={interaction.minWaitTime}
           />
         </div>
         <div className="w-[50%] border border-[#464646] bg-[#0F0F13] p-4 rounded-2xl">
@@ -87,6 +91,7 @@ function StepperPage1({
                 maxWaitTime: e.target.value,
               }))
             }
+            value={interaction.maxWaitTime}
           />
         </div>
       </div>

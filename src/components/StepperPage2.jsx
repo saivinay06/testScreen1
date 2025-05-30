@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { dummyPrizepools } from "../data";
-import { User, Users } from "lucide-react";
+import { Trash, User, Users } from "lucide-react";
 
 function StepperPage2({
   interaction,
@@ -14,13 +13,28 @@ function StepperPage2({
   packageRows,
   gameTypePrizepool,
   setSelectedPrizepoolId,
+  dummyPrizes,
+  activePrizepoolId,
 }) {
+  const [isDisabled, setIsDisabled] = useState(false);
+
   const [selectedPrizepool, setSelectedPrizepool] = useState(null);
 
   const handlePrizepool = (e) => {
+    setIsDisabled(true);
+
     const prizepoolId = e.target.value;
 
-    console.log(gameTypePrizepool);
+    if (prizepoolId === "Custom") {
+      setSelectedPrizepool(null);
+      setPrizeData([{ min: 0, max: 1, amount: 0, isMultiple: false }]);
+      setInteraction((prev) => ({
+        ...prev,
+        playersCount: "",
+        entryFee: "",
+      }));
+      return;
+    }
 
     const findPackage = packageRows.find(
       (each) => each.prizepool === prizepoolId
@@ -30,7 +44,7 @@ function StepperPage2({
 
     const { entryFee, players, prizepool } = findPackage;
 
-    const prize = dummyPrizepools.find((each) => each.id === prizepoolId);
+    const prize = dummyPrizes.find((each) => each.id === prizepoolId);
 
     setPrizeData(prize.prizeData);
     setSelectedPrizepool(findPackage);
@@ -43,7 +57,7 @@ function StepperPage2({
   };
 
   const handleAddNewRow = () => {
-    if (amountRemaining !== 0) {
+    if (amountRemaining > 0) {
       setPrizeData((prev) => [
         ...prev,
         { min: 0, max: 0, amount: 0, isMultiple: false },
@@ -59,6 +73,13 @@ function StepperPage2({
     });
   };
 
+  const handleDeleteRow = (index) => {
+    setPrizeData((prev) => {
+      if (prev.length === 1) return prev;
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   return (
     <>
       <div className="flex justify-between items-center">
@@ -66,13 +87,17 @@ function StepperPage2({
           <select
             className="w-full h-full cursor-pointer bg-transparent text-[#464646] font-bold rounded-lg text-sm outline-none"
             onChange={handlePrizepool}
+            value={selectedPrizepool?.prizepool || activePrizepoolId}
           >
-            <option defaultValue="">Existing prizepools</option>
+            <option value="" disabled={isDisabled}>
+              Existing prizepools
+            </option>
             {gameTypePrizepool.map((each, i) => (
-              <option key={i} value={each.prizepool}>{`Prizepool ${
-                i + 1
-              }`}</option>
+              <option key={i} value={each.prizepool}>
+                {each.prizepool}
+              </option>
             ))}
+            <option>Custom</option>
           </select>
         </div>
 
@@ -105,7 +130,7 @@ function StepperPage2({
               min="0"
               className="w-full h-full cursor-pointer bg-transparent text-[#464646] rounded-lg font-bold text-sm outline-none"
               onChange={handleEntryFee}
-              defaultValue={selectedPrizepool && selectedPrizepool.entryFee}
+              value={interaction.entryFee}
             />
           </div>
         </div>
@@ -128,25 +153,15 @@ function StepperPage2({
               >
                 Positions
               </th>
-              <th className="px-4 py-5 text-[#ffffff] font-extralight">
+              <th className="px-4 py-5 border-r border-r-[#464646] text-[#ffffff] font-extralight">
                 Amount
               </th>
+              <th className="text-[#ffffff] font-extralight w-[40px]"></th>
             </tr>
-            {/* <tr>
-              <th className="border px-4 py-2 text-gray-800 font-medium">
-                Minimum
-              </th>
-              <th className="border px-4 py-2 text-gray-800 font-medium">
-                Maximum
-              </th>
-              <th className="border px-4 py-2 text-gray-800 font-medium">
-                (Rupee)
-              </th>
-            </tr> */}
           </thead>
           <tbody>
             {prizeData.map((row, i) => (
-              <tr key={i}>
+              <tr key={i} className="group">
                 {!row.isMultiple ? (
                   <td className="border border-[#464646] px-2 py-3" colSpan={2}>
                     <div className="relative flex items-center justify-between">
@@ -272,6 +287,15 @@ function StepperPage2({
                     }
                   />
                 </td>
+                <td className="border border-[#464646] px-2 py-1 text-center">
+                  <button
+                    onClick={() => handleDeleteRow(i)}
+                    className="opacity-0 group-hover:opacity-100 transition-all ease duration-300"
+                    title="Delete Row"
+                  >
+                    <Trash className="text-white" size={20} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -298,13 +322,3 @@ function StepperPage2({
 }
 
 export default StepperPage2;
-
-// setSelectedPrizepool((prev) => {
-//   if (!prev) return null;
-//   const updatedPrizepool = { ...prev };
-//   updatedPrizepool.prizepool.prizeData = [
-//     ...updatedPrizepool.prizepool.prizeData,
-//     { min: "", max: "", amount: "" },
-//   ];
-//   return updatedPrizepool;
-// });

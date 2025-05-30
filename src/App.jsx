@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import GamePackage from "./components/GamePackage";
+import GamePackage from "./pages/gamePackage/GamePackage";
 
 function App() {
   return (

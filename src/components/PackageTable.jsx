@@ -3,7 +3,14 @@ import { dummyPrizepools, gameConfig } from "../data";
 import { User, Users } from "lucide-react";
 import { IndianRupee, X } from "lucide-react";
 
-function PackageTable({ data, setData, setPrizeData }) {
+function PackageTable({
+  data,
+  setData,
+  setPrizeData,
+  dummyPrizes,
+  handleEdit,
+  previewRef,
+}) {
   const [currentClicked, setCurrentClicked] = useState(null);
   const [editedData, setEditedData] = useState(null);
   const [currGame, setCurrGame] = useState(null);
@@ -18,15 +25,15 @@ function PackageTable({ data, setData, setPrizeData }) {
   const confirmationRef = useRef(null);
 
   useEffect(() => {
-    if (currentClicked && dialogRef.current) {
-      dialogRef.current.showModal();
+    if (currentClicked && previewRef.current) {
+      previewRef.current.showModal();
     }
   }, [currentClicked]);
 
   const handleRowClick = (id) => {
     const resultObj = data.find((each) => each.id === id);
 
-    const getTableData = dummyPrizepools.find(
+    const getTableData = dummyPrizes.find(
       (each) => each.id === resultObj.prizepool
     );
 
@@ -39,14 +46,9 @@ function PackageTable({ data, setData, setPrizeData }) {
     setTableData(getTableData.prizeData);
     setCurrentClicked(resultObj);
 
-    if (dialogRef.current) {
-      dialogRef.current.showModal();
+    if (previewRef.current) {
+      previewRef.current.showModal();
     }
-  };
-
-  const handleEdit = () => {
-    setEditedData({ ...currentClicked });
-    setIsEdit(true);
   };
 
   const handleSave = () => {
@@ -55,8 +57,6 @@ function PackageTable({ data, setData, setPrizeData }) {
     );
 
     updated.prizepool = editedData.prizepool;
-
-    console.log(editedData);
 
     setData(updated);
     setIsEdit(false);
@@ -169,19 +169,9 @@ function PackageTable({ data, setData, setPrizeData }) {
   };
 
   const toggleSwitch = (index) => {
-    setPrizeData((prev) => {
-      return prev.map((row, i) =>
-        i === index ? { ...row, isMultiple: !row.isMultiple } : row
-      );
-    });
-
-    const resultObj = data.find((each) => each.id === currentPackageId);
-
-    const getTableData = dummyPrizepools.find(
-      (each) => each.id === resultObj.prizepool
-    );
-
-    setTableData(getTableData.prizeData);
+    const updated = [...tableData];
+    updated[index].isMultiple = !updated[index].isMultiple;
+    setTableData(updated);
   };
 
   return (
@@ -220,7 +210,7 @@ function PackageTable({ data, setData, setPrizeData }) {
 
       {currentClicked && (
         <dialog
-          ref={dialogRef}
+          ref={previewRef}
           className="relative w-[50%] p-5 max-h-max rounded-xl shadow-xl bg-[#0F0F13]"
         >
           <div className="w-[55%] ml-auto flex justify-between items-center mb-6">
@@ -232,191 +222,45 @@ function PackageTable({ data, setData, setPrizeData }) {
 
           <div className={`flex ${isEdit ? "justify-between" : "flex-col"}`}>
             <div className="">
-              {isEdit ? (
-                <div className="mb-3">
-                  <p className="text-white text-sm">Game mode</p>
-                  <select
-                    className="w-72 border border-stone-600 p-2 rounded-lg"
-                    defaultValue={currentClicked.gameMode}
-                    onChange={(e) =>
-                      setEditedData((prev) => ({
-                        ...prev,
-                        gameMode: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">Game mode</option>
-                    {currGame &&
-                      currGame.modes.map((each, i) => (
-                        <option key={i} value={each}>
-                          {each}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              ) : (
-                <p className="mb-3 text-[#ffffffb6] text-sm">
-                  <strong className="text-white text-base">Game mode: </strong>
-                  {currentClicked.gameMode}
-                </p>
-              )}
-              {isEdit ? (
-                <div className="mb-3">
-                  {/* <p className="font-medium">Tier :</p> */}
-                  <p className="text-white text-sm">Tier</p>
-                  <select
-                    className="w-72 border border-stone-600 p-2 rounded-lg"
-                    defaultValue={currentClicked.tier}
-                    onChange={(e) =>
-                      setEditedData((prev) => ({
-                        ...prev,
-                        tier: e.target.value,
-                      }))
-                    }
-                    // onChange={(e) =>
-                    //   setInteraction((prev) => ({
-                    //     ...prev,
-                    //     tier: e.target.value,
-                    //   }))
-                    // }
-                  >
-                    <option value="">Tier</option>
-                    {currGame &&
-                      currGame.tiers.map((each, i) => (
-                        <option key={i} value={each}>
-                          {each}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              ) : (
-                <p className="mb-3 text-[#ffffffb6] text-sm">
-                  <strong className="text-white text-base">Tier: </strong>
-                  {currentClicked.tier}
-                </p>
-              )}
+              <p className="mb-3 text-[#ffffffb6] text-sm">
+                <strong className="text-white text-base">Game mode: </strong>
+                {currentClicked.gameMode}
+              </p>
+              <p className="mb-3 text-[#ffffffb6] text-sm">
+                <strong className="text-white text-base">Tier: </strong>
+                {currentClicked.tier}
+              </p>
             </div>
-            <div className="flex flex-col">
-              {isEdit ? (
-                <>
-                  <p className="text-white text-sm">Minimum wait time</p>
-                  <input
-                    type="number"
-                    placeholder="Min wait time (seconds)"
-                    name="minWaitTime"
-                    className="ml-2 w-72 p-2 pl-1 border border-stone-500 rounded-md focus:outline-none mb-3"
-                    defaultValue={currentClicked.minQue}
-                    onChange={(e) =>
-                      setEditedData((prev) => ({
-                        ...prev,
-                        minQue: e.target.value,
-                      }))
-                    }
-                    // onChange={(e) =>
-                    //   setInteraction((prev) => ({
-                    //     ...prev,
-                    //     minWaitTime: e.target.value,
-                    //   }))
-                    // }
-                  />
-                </>
-              ) : (
-                <p className="mb-3 text-[#ffffffb6] text-sm">
-                  <strong className="text-white text-base">
-                    Minimum wait time(Sec):{" "}
-                  </strong>
-                  {currentClicked.minQue}
-                </p>
-              )}
-              {isEdit ? (
-                <>
-                  <p className="text-white text-sm">Maximum wait time</p>
-                  <input
-                    type="number"
-                    placeholder="Max wait time (seconds)"
-                    name="maxWaitTime"
-                    className="ml-2 w-72 p-2 pl-1 border border-stone-500 rounded-md focus:outline-none"
-                    defaultValue={currentClicked.maxQue}
-                    onChange={(e) =>
-                      setEditedData((prev) => ({
-                        ...prev,
-                        maxQue: e.target.value,
-                      }))
-                    }
-                    // onChange={(e) =>
-                    //   setInteraction((prev) => ({
-                    //     ...prev,
-                    //     maxWaitTime: e.target.value,
-                    //   }))
-                    // }
-                  />
-                </>
-              ) : (
-                <p className="mb-3 text-[#ffffffb6] text-sm">
-                  <strong className="text-white text-base">
-                    Maximum wait time(Sec):{" "}
-                  </strong>
-                  {currentClicked.maxQue}
-                </p>
-              )}
+            <div className="flex flex-col items-start">
+              <p className="mb-3 text-[#ffffffb6] text-sm">
+                <strong className="text-white text-base">
+                  Minimum wait time(Sec):{" "}
+                </strong>
+                {currentClicked.minQue}
+              </p>
+
+              <p className="mb-3 text-[#ffffffb6] text-sm">
+                <strong className="text-white text-base">
+                  Maximum wait time(Sec):{" "}
+                </strong>
+                {currentClicked.maxQue}
+              </p>
             </div>
           </div>
           <div className="my-5">
             <div className="flex items-center gap-5 justify-end">
-              {isEdit ? (
-                <select
-                  className="ml-2 w-32 p-2 text-sm pl-1 border border-stone-500 rounded-md focus:outline-none"
-                  defaultValue={currentClicked.players}
-                  onChange={(e) =>
-                    setEditedData((prev) => ({
-                      ...prev,
-                      players: e.target.value,
-                    }))
-                  }
-                  // value={interaction.playersCount}
-                  // onChange={(e) =>
-                  //   setInteraction((prev) => ({
-                  //     ...prev,
-                  //     playersCount: parseInt(e.target.value),
-                  //   }))
-                  // }
-                >
-                  <option value="">Player count</option>
-                  {currGame &&
-                    currGame.playerCount.map((each, i) => (
-                      <option key={i} value={each}>
-                        {each}P
-                      </option>
-                    ))}
-                </select>
-              ) : (
-                <p className="mb-3 text-[#ffffffb6] text-sm">
-                  <strong className="text-white text-base">
-                    Player count:{" "}
-                  </strong>
-                  {currentClicked.players}
-                </p>
-              )}
-              {isEdit ? (
-                <input
-                  placeholder="Entry fee"
-                  type="number"
-                  min="0"
-                  className="ml-2 w-32 p-2 text-sm pl-1 border border-stone-500 rounded-md focus:outline-none"
-                  defaultValue={currentClicked.entryFee}
-                  onChange={handleEntryFee}
-                  // onChange={handleEntryFee}
-                  // defaultValue={selectedPrizepool && selectedPrizepool.entryFee}
-                />
-              ) : (
-                <p className="mb-3 text-[#ffffffb6] text-sm">
-                  <strong className="text-white text-base">Entry fee: </strong>
-                  {currentClicked.entryFee}
-                </p>
-              )}
+              <p className="mb-3 text-[#ffffffb6] text-sm">
+                <strong className="text-white text-base">Player count: </strong>
+                {currentClicked.players}
+              </p>
+
+              <p className="mb-3 text-[#ffffffb6] text-sm">
+                <strong className="text-white text-base">Entry fee: </strong>
+                {currentClicked.entryFee}
+              </p>
             </div>
 
-            <div className="border border-[#464646] rounded-2xl overflow-x-hidden overflow-y-scroll my-5 custom-scrollbar h-52">
+            <div className="border border-[#464646] rounded-2xl overflow-x-hidden overflow-y-scroll my-5 custom-scrollbar max-h-52">
               <table
                 className="table-auto w-full"
                 style={{ tableLayout: "fixed" }}
@@ -439,77 +283,15 @@ function PackageTable({ data, setData, setPrizeData }) {
                     <tr key={i}>
                       {!row.isMultiple ? (
                         <td
-                          className={`border border-[#464646] px-2 py-1 text-white text-center`}
+                          className={`border border-[#464646] px-2 py-1 h-12 text-white text-center`}
                           colSpan={2}
                         >
-                          {isEdit ? (
-                            <div className="relative flex items-center justify-between">
-                              <input
-                                className="h-10 w-full focus:outline-none text-center bg-transparent text-white"
-                                type="number"
-                                min="1"
-                                value={row.min}
-                                onChange={(e) =>
-                                  handleRowChange(i, "min", e.target.value)
-                                }
-                              />
-                              <div className="absolute right-1 flex items-center gap-4 mr-1">
-                                <button
-                                  onClick={() => toggleSwitch(i)}
-                                  className={`relative w-16 h-7 flex items-center justify-between rounded-full transition-colors duration-300 ${
-                                    tableData[i].isMultiple
-                                      ? "bg-[#1E1E24]"
-                                      : "bg-[#1E1E24]"
-                                  }`}
-                                >
-                                  <div
-                                    className={`flex items-center justify-center w-[2.2rem] h-full rounded-full shadow-md transform duration-300 bg-[#DAFD24] z-10" ${
-                                      tableData[i].isMultiple
-                                        ? "translate-x-8"
-                                        : "translate-x-0"
-                                    }`}
-                                  ></div>
-                                  <User
-                                    size={18}
-                                    className={`absolute left-[9px]`}
-                                    style={
-                                      tableData[i].isMultiple
-                                        ? { color: "#A1A1A1" }
-                                        : { color: "black" }
-                                    }
-                                  />
-                                  <Users
-                                    size={18}
-                                    className="absolute right-1"
-                                    style={
-                                      tableData[i].isMultiple
-                                        ? { color: "black" }
-                                        : { color: "#A1A1A1" }
-                                    }
-                                  />
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            row.min
-                          )}
+                          {row.min}
                         </td>
                       ) : (
                         <>
-                          <td className="border border-[#464646] px-2 py-1 text-white h-10 w-full bg-transparent text-center">
-                            {isEdit ? (
-                              <input
-                                className="h-10 w-full focus:outline-none text-center text-white bg-transparent"
-                                type="number"
-                                min="1"
-                                value={row.max || ""}
-                                onChange={(e) =>
-                                  handleRowChange(i, "max", e.target.value)
-                                }
-                              />
-                            ) : (
-                              row.min
-                            )}
+                          <td className="border border-[#464646] px-2 py-1 text-white h-12 w-full bg-transparent text-center">
+                            {row.min}
                           </td>
                           <td
                             className={`${
@@ -517,97 +299,27 @@ function PackageTable({ data, setData, setPrizeData }) {
                               "relative flex items-center justify-between"
                             } text-white h-12 border border-[#464646] px-2 py-1 text-center`}
                           >
-                            {isEdit ? (
-                              <>
-                                <input
-                                  className="h-full w-full focus:outline-none text-center text-white bg-transparent"
-                                  type="number"
-                                  min="1"
-                                  value={row.max}
-                                  onChange={(e) =>
-                                    handleRowChange(i, "max", e.target.value)
-                                  }
-                                />
-                                <div className="absolute right-1 flex items-center gap-4 mr-1">
-                                  <button
-                                    onClick={() => toggleSwitch(i)}
-                                    className={`relative w-16 h-7 flex items-center justify-between rounded-full transition-colors duration-300 ${
-                                      tableData[i].isMultiple
-                                        ? "bg-[#1E1E24]"
-                                        : "bg-[#1E1E24]"
-                                    }`}
-                                  >
-                                    <div
-                                      className={`flex items-center justify-center w-[2.2rem] h-full rounded-full shadow-md transform duration-300 bg-[#DAFD24] z-10" ${
-                                        tableData[i].isMultiple
-                                          ? "translate-x-8"
-                                          : "translate-x-0"
-                                      }`}
-                                    ></div>
-                                    <User
-                                      size={18}
-                                      className={`absolute left-[9px]`}
-                                      style={
-                                        tableData[i].isMultiple
-                                          ? { color: "#A1A1A1" }
-                                          : { color: "black" }
-                                      }
-                                    />
-                                    <Users
-                                      size={18}
-                                      className="absolute right-1"
-                                      style={
-                                        tableData[i].isMultiple
-                                          ? { color: "black" }
-                                          : { color: "#A1A1A1" }
-                                      }
-                                    />
-                                  </button>
-                                </div>
-                              </>
-                            ) : (
-                              row.max
-                            )}
+                            {row.max}
                           </td>
                         </>
                       )}
 
                       <td className="border border-[#464646] px-2 py-1 text-center bg-transparent text-white">
-                        {isEdit ? (
-                          <input
-                            className="h-10 w-full focus:outline-none text-center bg-transparent text-white"
-                            type="number"
-                            min="1"
-                            value={row.amount || ""}
-                            onChange={(e) =>
-                              handleRowChange(i, "amount", e.target.value)
-                            }
-                          />
-                        ) : (
-                          row.amount
-                        )}
+                        {row.amount}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            {isEdit && (
-              <button
-                className="rounded-2xl py-3 px-4 bg-[#1E1E24] text-white text-[13px]"
-                onClick={handleAddNewRow}
-              >
-                Add row
-              </button>
-            )}
           </div>
           <div className="flex items-center justify-end gap-3">
             <button
               className="bg-black
                 px-6 py-2 rounded-xl text-white w-24 text-sm border border-[#ffffff]"
-              onClick={isEdit ? handleSave : handleEdit}
+              onClick={() => handleEdit(currentClicked.id)}
             >
-              {isEdit ? "Save" : "Edit"}
+              Edit
             </button>
             <button
               onClick={handleDeletePackage}

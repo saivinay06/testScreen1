@@ -1,16 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowDownUp, FilterIcon, Plus, X } from "lucide-react";
-import Stepper from "./Stepper";
-import PackageTable from "./PackageTable";
-import StepperPage1 from "./StepperPage1";
-import StepperPage2 from "./StepperPage2";
-import { dummyPackages, dummyPrizepools } from "../data";
-import { gameConfig } from "../data";
+import Stepper from "../../components/Stepper";
+import PackageTable from "../../components/PackageTable";
+import StepperPage1 from "../../components/StepperPage1";
+import StepperPage2 from "../../components/StepperPage2";
+import { dummyPackages, dummyPrizepools } from "../../data";
+import { gameConfig } from "../../data";
 import { toast } from "react-toastify";
-import { ToastContainer } from "react-toastify";
-
-import "react-toastify/dist/ReactToastify.css";
-import Filter from "./Filter";
+import Filter from "../../components/Filter";
 
 const defaultFiltered = gameConfig.map((item) => item["name"]);
 
@@ -18,17 +15,29 @@ const stepperArr = Array.from({ length: 2 });
 
 function GamePackage() {
   const [showBubble, setShowBubble] = useState(false);
+  const [dummyPrizes, setDummyPrizes] = useState(dummyPrizepools);
   const [packageRows, setPackageRows] = useState(dummyPackages);
   const [updatedPackage, setUpdatedPackage] = useState(packageRows || []);
+  const [filteredPPackage, setFilteredPPackage] = useState(packageRows || []);
   const [gameTypePrizepool, setGameTypePrizepool] = useState([]);
   const [accessNextPage, setAccessNextPage] = useState(false);
-  const [selectedFilterBoxes, setSelectedFilterBoxes] = useState([]);
+  const [activeFilters, setActiveFilters] = useState({
+    gameType: [],
+    tier: [],
+    gameMode: [],
+    playerCount: [],
+  });
+
   const [filterType, setFilterType] = useState(defaultFiltered);
   const [activeFilter, setActiveFilter] = useState("gameType");
   const [currActiveTab, setCurrActiveTab] = useState(1);
   const [currActiveGame, setCurrActiveGame] = useState([]);
   const [packageKey, setPackageKey] = useState("");
   const [selectedPrizepoolId, setSelectedPrizepoolId] = useState("");
+  const [packageToEdit, setPackageToEdit] = useState("");
+  const [activePrizepoolId, setActivePrizepoolId] = useState(null);
+  const [submitEdit, setSubmitEdit] = useState(false);
+  const [currPrizepoolData, setCurrPrizepoolData] = useState([]);
 
   const [userInteraction, setUserInteraction] = useState({
     currGame: "",
@@ -48,6 +57,8 @@ function GamePackage() {
 
   const dialogRef = useRef(null);
 
+  const previewRef = useRef(null);
+
   useEffect(() => {
     const fee = parseFloat(userInteraction.entryFee) || 0;
     const players = parseInt(userInteraction.playersCount) || 0;
@@ -56,31 +67,26 @@ function GamePackage() {
 
     if (currGame && mode && tier && maxWaitTime && minWaitTime) {
       setAccessNextPage(true);
+    } else {
+      setAccessNextPage(false);
     }
 
-    const usedAmount = prizeData.reduce(
-      (sum, row) =>
-        sum +
-        calculateMinMax(
-          parseFloat(row.min),
-          parseFloat(row.max),
-          parseFloat(row.amount),
-          row.isMultiple
-        ),
-      0
-    );
+    const usedAmount =
+      prizeData.reduce(
+        (sum, row) =>
+          sum +
+          calculateMinMax(
+            parseFloat(row.min),
+            parseFloat(row.max),
+            parseFloat(row.amount),
+            row.isMultiple
+          ),
+        0
+      ) || 0;
 
     setTotalAmount(total);
     setAmountRemaining(total - usedAmount);
-  }, [prizeData, userInteraction]);
-
-  useEffect(() => {
-    if (
-      !selectedFilterBoxes.some((each) => each === "Ludo" || each === "Rummy")
-    ) {
-      setUpdatedPackage(packageRows);
-    }
-  }, [selectedFilterBoxes]);
+  }, [prizeData, userInteraction, updatedPackage]);
 
   const handleAdd = () => {
     dialogRef.current?.showModal();
@@ -91,15 +97,19 @@ function GamePackage() {
   };
 
   const handleGameChange = (e) => {
-    const findGameObj = gameConfig.find((each) => each.name === e.target.value);
+    if (e.target.value) {
+      const findGameObj = gameConfig.find(
+        (each) => each.name === e.target.value
+      );
 
-    const gamePrizepool = packageRows.filter((each) =>
-      findGameObj.playerCount.includes(each.players)
-    );
+      const gamePrizepool = packageRows.filter((each) =>
+        findGameObj.playerCount.includes(each.players)
+      );
 
-    setGameTypePrizepool(gamePrizepool);
+      setGameTypePrizepool(gamePrizepool);
 
-    setUserInteraction((prev) => ({ ...prev, currGame: findGameObj }));
+      setUserInteraction((prev) => ({ ...prev, currGame: findGameObj }));
+    }
   };
 
   const handleNext = () => {
@@ -116,7 +126,6 @@ function GamePackage() {
   };
 
   const handleAddRow = () => {
-    console.log(prizeData.length);
     if (amountRemaining !== 0 && prizeData.length === 0) {
       setPrizeData((prev) => [...prev, { min: "", max: "", amount: "" }]);
     }
@@ -175,17 +184,18 @@ function GamePackage() {
   const calculateAmount = () => {
     const updated = [...prizeData];
 
-    const usedAmount = updated.reduce(
-      (sum, row) =>
-        sum +
-        calculateMinMax(
-          parseFloat(row.min),
-          parseFloat(row.max),
-          parseFloat(row.amount),
-          row.isMultiple
-        ),
-      0
-    );
+    const usedAmount =
+      updated.reduce(
+        (sum, row) =>
+          sum +
+          calculateMinMax(
+            parseFloat(row.min),
+            parseFloat(row.max),
+            parseFloat(row.amount),
+            row.isMultiple
+          ),
+        0
+      ) || 0;
 
     setAmountRemaining((totalAmount || 0) - usedAmount);
   };
@@ -196,28 +206,56 @@ function GamePackage() {
     }
   };
 
+  const applyAllFilters = (filters) => {
+    let filtered = [...updatedPackage];
+
+    if (filters.gameType.length > 0) {
+      filtered = filtered.filter((pkg) =>
+        filters.gameType.includes(pkg.gameType)
+      );
+    }
+
+    if (filters.tier.length > 0) {
+      filtered = filtered.filter((pkg) => filters.tier.includes(pkg.tier));
+    }
+
+    if (filters.gameMode.length > 0) {
+      filtered = filtered.filter((pkg) =>
+        filters.gameMode.includes(pkg.gameMode)
+      );
+    }
+
+    if (filters.playerCount.length > 0) {
+      filtered = filtered.filter((pkg) =>
+        filters.playerCount.includes(pkg.players)
+      );
+    }
+
+    setFilteredPPackage(filtered);
+
+    if (filters.gameType.length > 0) {
+      const activeGames = gameConfig.filter((each) =>
+        filters.gameType.includes(each.name)
+      );
+      setCurrActiveGame(activeGames);
+    }
+  };
+
   const handleCheckbox = (val, e) => {
     const { checked } = e.target;
 
-    setSelectedFilterBoxes((prevSelected) => {
-      const newSelected = checked
-        ? [...prevSelected, val]
-        : prevSelected.filter((item) => item !== val);
+    setActiveFilters((prevFilters) => {
+      const updatedTypeFilter = checked
+        ? [...prevFilters[activeFilter], val]
+        : prevFilters[activeFilter].filter((item) => item !== val);
 
-      const filtered = dummyPackages.filter((pkg) =>
-        newSelected.includes(pkg[activeFilter])
-      );
+      const newFilters = {
+        ...prevFilters,
+        [activeFilter]: updatedTypeFilter,
+      };
 
-      if (activeFilter === "gameType") {
-        const activeGames = gameConfig.filter((each) =>
-          newSelected.includes(each.name)
-        );
-
-        setCurrActiveGame(activeGames);
-      }
-
-      setUpdatedPackage(filtered);
-      return newSelected;
+      applyAllFilters(newFilters);
+      return newFilters;
     });
   };
 
@@ -233,7 +271,7 @@ function GamePackage() {
 
   const handleEntryFee = (e) => {
     setUserInteraction((prev) => ({ ...prev, errorText: "" }));
-    const entryFee = Number(e.target.value) || 0;
+    const entryFee = Number(e.target.value) || "";
 
     setUserInteraction((prev) => ({ ...prev, entryFee }));
 
@@ -241,10 +279,6 @@ function GamePackage() {
       setTotalAmount(userInteraction.entryFee * userInteraction.playersCount);
     }
   };
-
-  // const checkIsDisabled = (val) => {
-  //   currActiveGame[packageKey].in;
-  // };
 
   const arePrizePoolsEqual = (a = [], b = []) => {
     if (a.length !== b.length) return false;
@@ -263,19 +297,25 @@ function GamePackage() {
   const handleCreateRow = () => {
     setCurrActiveTab(1);
     dialogRef.current.close();
+    let id;
 
-    const prizepoolObj = dummyPrizepools.find(
-      (each) => each.id === selectedPrizepoolId
-    );
+    if (selectedPrizepoolId) {
+      const prizepoolObj = dummyPrizes.find(
+        (each) => each.id === selectedPrizepoolId
+      );
 
-    let id = prizepoolObj.id;
-
-    if (prizepoolObj && arePrizePoolsEqual(prizepoolObj.prizepool, prizeData)) {
-      id = prizepoolObj.id;
+      if (
+        prizepoolObj &&
+        arePrizePoolsEqual(prizepoolObj.prizepool, prizeData)
+      ) {
+        id = prizepoolObj.id;
+      } else {
+        id = `prizepool-${dummyPrizes.length + 1}`;
+        setDummyPrizes((prev) => [...prev, { id, prizeData }]);
+      }
     } else {
-      id = `prizepool-${dummyPrizepools.length + 1}`;
-      dummyPrizepools.push({ id, prizeData });
-      console.log({ id, prizeData });
+      id = `prizepool-${dummyPrizes.length + 1}`;
+      setDummyPrizes((prev) => [...prev, { id, prizeData }]);
     }
 
     const {
@@ -289,7 +329,7 @@ function GamePackage() {
     } = userInteraction;
 
     const newRow = {
-      id: packageRows.length + 1,
+      id: filteredPPackage.length + 1,
       gameType: currGame.name,
       gameMode: mode,
       tier,
@@ -301,6 +341,120 @@ function GamePackage() {
     };
 
     setUpdatedPackage((prevRows) => [...prevRows, newRow]);
+    setFilteredPPackage((prev) => [...prev, newRow]);
+
+    setUserInteraction({
+      currGame: "",
+      mode: "",
+      tier: "",
+      maxWaitTime: "",
+      minWaitTime: "",
+      playersCount: "",
+      entryFee: "",
+      errorText: "",
+    });
+
+    setAmountRemaining(0);
+
+    setPrizeData([{ min: 0, max: 1, amount: 0, isMultiple: false }]);
+  };
+
+  const handleEdit = (packageId) => {
+    const packageToEdit = updatedPackage.find((row) => row.id === packageId);
+    const activeGame = gameConfig.find(
+      (game) => game.name === packageToEdit.gameType
+    );
+
+    setUserInteraction((prev) => {
+      return {
+        ...prev,
+        currGame: activeGame,
+        mode: packageToEdit.gameMode,
+        tier: packageToEdit.tier,
+        maxWaitTime: packageToEdit.maxQue,
+        minWaitTime: packageToEdit.minQue,
+        playersCount: packageToEdit.players,
+        entryFee: packageToEdit.entryFee,
+      };
+    });
+
+    const gamePrizepool = updatedPackage.filter((each) =>
+      activeGame.playerCount.includes(each.players)
+    );
+
+    const activePrizepoolData = dummyPrizes.find(
+      (prize) => prize.id === packageToEdit.prizepool
+    );
+
+    setSubmitEdit(true);
+
+    setPrizeData(activePrizepoolData.prizeData);
+
+    setGameTypePrizepool(gamePrizepool);
+
+    setCurrPrizepoolData(activePrizepoolData);
+
+    setActivePrizepoolId(packageToEdit.prizepool);
+
+    dialogRef.current.showModal();
+    previewRef.current.close();
+    setCurrActiveTab(1);
+    setPackageToEdit(packageToEdit);
+  };
+
+  const handleSubmitEdit = () => {
+    let id;
+
+    if (arePrizePoolsEqual(currPrizepoolData.prizepool, prizeData)) {
+      id = currPrizepoolData.id;
+    } else {
+      id = `prizepool-${dummyPrizes.length + 1}`;
+      setDummyPrizes((prev) => [...prev, { id, prizeData }]);
+    }
+
+    const {
+      currGame,
+      mode,
+      tier,
+      entryFee,
+      playersCount,
+      minWaitTime,
+      maxWaitTime,
+    } = userInteraction;
+
+    const updatedRow = {
+      ...packageToEdit,
+      gameType: currGame.name,
+      gameMode: mode,
+      tier,
+      entryFee,
+      prizepool: id,
+      players: playersCount,
+      minQue: minWaitTime,
+      maxQue: maxWaitTime,
+    };
+
+    setUpdatedPackage((prevPackages) =>
+      prevPackages.map((pkg) =>
+        pkg.id === packageToEdit.id ? updatedRow : pkg
+      )
+    );
+
+    dialogRef.current.close();
+    setCurrActiveTab(1);
+    setSubmitEdit(false);
+    setPrizeData([{ min: 0, max: 1, amount: 0, isMultiple: false }]);
+    setAmountRemaining(0);
+    setUserInteraction({
+      currGame: "",
+      mode: "",
+      tier: "",
+      maxWaitTime: "",
+      minWaitTime: "",
+      playersCount: "",
+      entryFee: "",
+      errorText: "",
+    });
   };
 
   const displayFields = (step) => {
@@ -331,6 +485,8 @@ function GamePackage() {
             gameTypePrizepool={gameTypePrizepool}
             calculateAmount={calculateAmount}
             setSelectedPrizepoolId={setSelectedPrizepoolId}
+            dummyPrizes={dummyPrizes}
+            activePrizepoolId={activePrizepoolId}
           />
         );
     }
@@ -364,7 +520,7 @@ function GamePackage() {
                     setShowBubble={setShowBubble}
                     handleFilterClick={handleFilterClick}
                     filterType={filterType}
-                    selectedFilterBoxes={selectedFilterBoxes}
+                    activeFilters={activeFilters}
                     handleCheckbox={handleCheckbox}
                     currActiveGame={currActiveGame}
                     packageKey={packageKey}
@@ -378,9 +534,12 @@ function GamePackage() {
 
       <div className="px-10 py-6">
         <PackageTable
-          data={filterType ? updatedPackage : packageRows}
-          setData={filterType ? setUpdatedPackage : setPackageRows}
+          data={filteredPPackage}
+          setData={setUpdatedPackage}
           setPrizeData={setPrizeData}
+          dummyPrizes={dummyPrizes}
+          handleEdit={handleEdit}
+          previewRef={previewRef}
         />
       </div>
 
@@ -417,10 +576,17 @@ function GamePackage() {
                   Back
                 </button>
                 <button
-                  className="px-3 py-2 rounded-xl text-black w-24 bg-[#DAFD24] text-sm"
-                  onClick={handleCreateRow}
+                  className={`px-3 py-2 rounded-xl w-24 cursor-pointer ${
+                    amountRemaining === 0 && userInteraction.playersCount
+                      ? "text-black bg-[#DAFD24]"
+                      : "bg-[#2e2d2d8a] text-[#ffffff23]"
+                  } text-sm`}
+                  disabled={
+                    amountRemaining !== 0 && !userInteraction.playersCount
+                  }
+                  onClick={submitEdit ? handleSubmitEdit : handleCreateRow}
                 >
-                  Create
+                  {submitEdit ? "Submit" : "Create"}
                 </button>
               </div>
             ) : (
@@ -438,8 +604,6 @@ function GamePackage() {
           </div>
         </div>
       </dialog>
-      {/* <Filter active={filterActive} /> */}
-      <ToastContainer position="top-right" autoClose={3000} className="z-50" />
     </div>
   );
 }

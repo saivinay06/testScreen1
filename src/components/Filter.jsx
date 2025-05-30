@@ -9,7 +9,7 @@ function Filter({
   activeFilter,
   filterType,
   handleCheckbox,
-  selectedFilterBoxes,
+  activeFilters,
   currActiveGame,
   packageKey,
 }) {
@@ -58,12 +58,12 @@ function Filter({
         {/* <div className="w-px h-40 bg-black" /> */}
         <div className="w-[50%] p-5 flex flex-col gap-3">
           {filterType &&
-            filterType.map((each) => (
-              <div className="flex items-center gap-2 custom-checkbox">
+            filterType.map((each, i) => (
+              <div className="flex items-center gap-2 custom-checkbox" key={i}>
                 <input
                   type="checkbox"
-                  checked={selectedFilterBoxes.includes(each)}
-                  onChange={(e) => handleCheckbox(each, e)}
+                  checked={activeFilters[activeFilter]?.includes(each)}
+                  onChange={(e) => handleCheckbox(each, e, activeFilter)}
                   value={each}
                   disabled={
                     currActiveGame.length > 0 &&
